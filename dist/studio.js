@@ -71,8 +71,8 @@ export class Studio {
   /* ---------- Sonnensystem ---------- */
   system(jd, real = false) {
     this.clear(); this.starfield(); this.key.intensity = 0; this.ambient.intensity = .18;
-    const dist = r => real ? r * 12 : 7 * Math.pow(r, .55), size = d => real ? 1.2 + 1.1 * Math.pow(d / 12756, .5) : .4 * Math.pow(d / 12756, .42);
-    const sun = this.sphere(real ? 6 : 1.6, new THREE.MeshBasicMaterial({map: this.texture('sun.jpg')}));
+    const dist = r => real ? r * 12 : 4 + 11 * Math.log1p(r / .25), size = d => real ? 1.2 + 1.1 * Math.pow(d / 12756, .5) : .75 + .6 * Math.pow(d / 12756, .42), extent = [];
+    const sun = this.sphere(real ? 6 : 2.3, new THREE.MeshBasicMaterial({map: this.texture('sun.jpg')}));
     sun.userData.pick = {id: 'sun', label: 'Sonne'}; this.root.add(sun); this.pickables.push(sun);
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({map: this.glowTexture(), color: 0xffc46b, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending}));
     glow.scale.setScalar(real ? 26 : 7); this.root.add(glow);
@@ -81,17 +81,19 @@ export class Studio {
     const names = {mercury: 'Merkur', venus: 'Venus', earth: 'Erde', mars: 'Mars', jupiter: 'Jupiter', saturn: 'Saturn', uranus: 'Uranus', neptune: 'Neptun'};
     for (const id of PLANETS) {
       const pts = orbitPoints(id, jd).map(p => { const r = Math.hypot(...p); return ecl(p, dist(r) / r); });
-      this.line(this.root, pts, '#8ea2ff', .28);
+      extent.push(...pts); this.line(this.root, pts, '#8ea2ff', .28);
       const g = new THREE.Group(), r = size(diam[id]);
       const mesh = this.sphere(r, new THREE.MeshStandardMaterial({map: this.texture(id + '.jpg'), roughness: 1, metalness: 0}), 40);
       mesh.userData.pick = {id, label: names[id]}; g.add(mesh); this.pickables.push(mesh);
-      if (id === 'saturn') g.add(this.rings(r)); this.label(g, names[id], new THREE.Vector3(0, r * 1.15, 0), {size: 1, screen: true});
+      if (id === 'saturn') g.add(this.rings(r)); this.label(g, names[id], new THREE.Vector3(0, r * 1.15, 0), {size: 1.4, screen: true});
       this.root.add(g); this.planets[id] = {g, mesh};
     }
     this.place = jd2 => { for (const id of PLANETS) { const p = helio(id, jd2), r = Math.hypot(...p); this.planets[id].g.position.copy(ecl(p, dist(r) / r)); this.planets[id].mesh.rotation.y += .01; } };
     this.place(jd); this.sunLight.position.set(0, 0, 0);
-    const radius = Math.max(...PLANETS.map(id => Math.max(...orbitPoints(id, jd).map(p => dist(Math.hypot(...p))))));
-    this.view(radius / Math.sin(20 * D2R) * 1.12, [0, .9, 1]);
+    // Fit the complete orbital plane to the viewport, rather than an oversized bounding sphere.
+    const aspect = this.host.clientWidth / Math.max(this.host.clientHeight, 1), direction = new THREE.Vector3(0, .9, 1).normalize(), up = new THREE.Vector3(0, direction.z, -direction.y), tan = Math.tan(20 * D2R);
+    const distance = Math.max(...extent.map(v => direction.dot(v) + Math.max(Math.abs(v.x) / (tan * aspect), Math.abs(up.dot(v)) / tan) / .82));
+    this.view(distance * Math.min(1, aspect), [0, .9, 1]);
   }
   glowTexture() {
     if (this.cache.glow) return this.cache.glow;
