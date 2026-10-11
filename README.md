@@ -144,6 +144,14 @@ Programmcode und eigene Lerntexte: **MIT** ([LICENSE](LICENSE)). Planetentexture
 
 Die Lerntexte sind KI-unterstützt erstellt; eine unabhängige fachredaktionelle Abnahme steht aus.
 
+---
+
 <div align="center">
+<br>
 <img src="docs/banner-footer.svg" width="100%" alt="Per aspera ad astra – Das Universum verstehen">
+
+**Große Fragen beginnen mit einem Blick nach oben.**<br>
+<sub>ASTRA · DGKN@Labs · Atlas 05</sub><br>
+<sub>[CORPUS · Der Körper](https://github.com/dogenc/CORPUS-Anatomieatlas) &nbsp; / &nbsp; [CELLULA · Die Zelle](https://github.com/dogenc/CELLULA) &nbsp; / &nbsp; [TERRA · Die Erde](https://github.com/dogenc/TERRA) &nbsp; / &nbsp; [ELEMENTA · Die Materie](https://github.com/dogenc/ELEMENTA) &nbsp; / &nbsp; <b>ASTRA · Das Universum</b></sub>
+
 </div>
