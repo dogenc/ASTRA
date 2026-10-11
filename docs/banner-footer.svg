@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="120" viewBox="0 0 1280 120" role="img" aria-label="Per aspera ad astra – Das Universum verstehen">
+  <defs><linearGradient id="f" x1="0" x2="1"><stop offset="0" stop-color="#121842"/><stop offset="1" stop-color="#2a3274"/></linearGradient></defs>
+  <rect width="1280" height="120" rx="18" fill="url(#f)"/>
+  <g fill="#ffd98a"><path d="M150 40l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/><path d="M1130 60l2.4 7 7 2.4-7 2.4-2.4 7-2.4-7-7-2.4 7-2.4z"/><circle cx="220" cy="80" r="2"/><circle cx="1060" cy="38" r="2"/><circle cx="1180" cy="92" r="1.6"/><circle cx="96" cy="88" r="1.6"/></g>
+  <text x="640" y="56" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-size="30" fill="#ffffff">Per aspera ad astra</text>
+  <text x="640" y="86" text-anchor="middle" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-size="14" letter-spacing="6" fill="#c3c9f2">STERN FÜR STERN · DGKN@LABS</text>
+</svg>

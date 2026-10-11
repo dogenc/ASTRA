@@ -1,0 +1,12 @@
+{
+  "name": "astra",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/data.mjs && node tests/desktop-paths.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
