@@ -21,7 +21,7 @@ W E L T R A U M A T L A S  ·  3 D  ·  O P E N  S O U R C E
 **Von der Sonne bis zu den Sternen über deinem Ort.**  
 Ein interaktiver Weltraum-Atlas auf Deutsch — direkt im Browser.
 
-![Version](https://img.shields.io/badge/Version-1.0.0-4a54b8?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-1.0.1-4a54b8?style=for-the-badge)
 ![Himmelskörper](https://img.shields.io/badge/Himmelskörper-11-4a54b8?style=for-the-badge)
 ![Sterne](https://img.shields.io/badge/Sterne-5.080-4a54b8?style=for-the-badge)
 ![Sternbilder](https://img.shields.io/badge/Sternbilder-88-4a54b8?style=for-the-badge)
@@ -39,20 +39,20 @@ ASTRA ist der fünfte Atlas von **DGKN@Labs**, nach [CORPUS](https://github.com/
 
 | Bereich | Entdecken |
 |---|---|
-| **Sonnensystem** | Alle acht Planeten auf ihren echten Bahnen für jedes Datum von 1800 bis 2050 – mit Zeitregler, kompakter oder maßstäblicher Ansicht und aktuellen Abständen (Erde–Mars, Lichtlaufzeit …). |
-| **Himmelskörper** | Sonne, Planeten, Mond und Pluto als texturierte 3D-Kugeln mit Achsneigung, Saturnringen und Wolken. Ein Klick auf **Innerer Aufbau** schneidet sie auf: Kern, Mantel, Kruste oder metallischer Wasserstoff. Steckbriefe mit NASA-Daten. |
-| **Sternenhimmel** | Der Himmel über deinem Ort zu jeder Uhrzeit: 5.080 Sterne bis 6,0 mag, alle 88 Sternbilder mit deutschen Namen, Sonne, Mond und Planeten an ihrer berechneten Position. Mondphase, Dämmerung und sichtbare Planeten auf einen Blick. |
+| **Sonnensystem** | Alle acht Planeten auf angenäherten Bahnen für jedes Datum von 1800 bis 2050 – mit Zeitregler, kompakter oder maßstäblicher Ansicht und aktuellen Abständen (Erde–Mars, Lichtlaufzeit …). |
+| **Himmelskörper** | Sonne, Planeten und Mond als texturierte 3D-Kugeln; Pluto als schematische Kugel mit Achsneigung, Saturnringen und Wolken. Ein Klick auf **Innerer Aufbau** schneidet sie auf: Kern, Mantel, Kruste oder metallischer Wasserstoff. Steckbriefe mit NASA-Daten. |
+| **Sternenhimmel** | Der Himmel über deinem Ort zu jeder Uhrzeit: 5.080 Sterne bis 6,0 mag, alle 88 Sternbilder mit deutschen Namen, Sonne, Mond und Planeten an ihrer berechneten Position. Mondphase, Dämmerung und Planeten über dem Horizont auf einen Blick. |
 | **Phänomene** | Mondphasen, Sonnen- und Mondfinsternis, Jahreszeiten und das Leben eines Sterns – je vier Schritte mit Zeitleiste, Pause und Tempo. |
 
 ### Wie genau ist das?
 
-Die Planetenpositionen stammen aus den Keplerschen Bahnelementen des **JPL** (E. M. Standish, gültig 1800–2050). Der Test `tests/data.mjs` vergleicht sie mit **JPL Horizons**: Die größte Abweichung liegt bei **0,14°** (Saturn), bei den inneren Planeten unter 0,01°. Der Mond wird mit einer verkürzten Störungsreihe berechnet und weicht weniger als **0,05°** ab. Für eine Lern-App ist das sehr genau – zur Navigation ist ASTRA trotzdem nicht gedacht.
+Die Planetenpositionen stammen aus den Keplerschen Bahnelementen des **JPL** (E. M. Standish, gültig 1800–2050). Der Test `tests/data.mjs` vergleicht sie mit **JPL Horizons**: An den hinterlegten Referenzterminen liegt die größte Richtungsabweichung bei **0,14°** (Saturn), bei den inneren Planeten unter 0,01°. Der Mond wird mit einer verkürzten Störungsreihe berechnet und weicht an den Referenzterminen weniger als **0,05°** ab. Diese Stichproben belegen keine durchgehend gleiche Genauigkeit von 1800 bis 2050. Präzession, Nutation, Refraktion und topozentrische Mondparallaxe sind im Himmelsmodell nicht berücksichtigt; ASTRA dient der Veranschaulichung, nicht der Navigation.
 
 ### Werkzeuge zum Lernen
 
 - **Drehen und zoomen** mit Maus oder Touch, Kamera zurücksetzen, automatische Rotation.
 - **Zeit laufen lassen** – im Sonnensystem bis zu einem Jahr pro Sekunde, am Himmel bis zu sechs Stunden pro Sekunde.
-- **Ort wählen:** zehn Städte in Deutschland, Österreich, der Schweiz und der Türkei oder eigene Koordinaten.
+- **Ort wählen:** elf Städte (einschließlich Dortmund) in Deutschland, Österreich, der Schweiz und der Türkei oder eigene Koordinaten.
 - **Planeten anklicken** öffnet ihren Steckbrief.
 - **PNG-Export** der aktuellen Ansicht.
 - **Notizen pro Eintrag**, ausschließlich im lokalen Browser-Speicher.
@@ -83,7 +83,7 @@ Acht echte Aufnahmen aus ASTRA 1.0.0 mit **1800 × 1160 Pixeln**, dazu eine Hand
 
 ## Starten
 
-Voraussetzung: **Python 3** und ein moderner Browser mit WebGL.
+Voraussetzung: **Python 3** und ein moderner Browser mit WebGL2.
 
 ```bash
 git clone https://github.com/dogenc/ASTRA.git
@@ -111,10 +111,10 @@ Den Inhalt von **`dist/`** als Website ausliefern — beispielsweise mit Cloudfl
 
 | Paket | Verwendung |
 |---|---|
-| `ASTRA-1.0.0-Windows-Setup.exe` | Installierbare Windows-App, x64 |
-| `ASTRA-1.0.0-Windows-portable.exe` | Ohne Installation starten, x64 |
-| `ASTRA-1.0.0-macOS.dmg` | macOS-App für Intel und Apple Silicon |
-| `ASTRA-1.0.0-Web.zip` | Statische Dateien für die eigene Domain |
+| `ASTRA-1.0.1-Windows-Setup.exe` | Installierbare Windows-App, x64 |
+| `ASTRA-1.0.1-Windows-portable.exe` | Ohne Installation starten, x64 |
+| `ASTRA-1.0.1-macOS.dmg` | macOS-App für Intel und Apple Silicon |
+| `ASTRA-1.0.1-Web.zip` | Statische Dateien für die eigene Domain |
 | `SHA256SUMS.txt` | Prüfsummen der Downloads |
 
 Der Workflow veröffentlicht diese Dateien **erst nach erfolgreichen Daten-, Browser- und nativen Desktop-Prüfungen**. Die Pakete sind ohne kommerzielles Herausgeberzertifikat; macOS ist nicht notarisiert. Das Betriebssystem kann deshalb Warnungen anzeigen.
@@ -137,6 +137,12 @@ python3 scripts/prepare_data.py   # Daten aus sources/ neu aufbereiten
 | 03 · [TERRA](https://github.com/dogenc/TERRA) | Unser Planet |
 | 04 · [ELEMENTA](https://github.com/dogenc/ELEMENTA) | Die Materie verstehen |
 | **05 · ASTRA** | **Das Universum verstehen** |
+
+## Qualitätsprüfung 1.0.1
+
+`npm test` prüft zusätzlich die echte Three.js-Geometrie: Ausrichtung der Erdachse zu allen vier Jahreszeiten, Schattenrichtung, Mondphasen, die Übersicht aller acht Planeten, erhaltene Himmelsansicht und Zoom, Horizontbeschriftungen sowie die rückläufige Rotation von Venus und Uranus. Der Browser-Test prüft außerdem Zeitgrenzen, Ortseingaben, blockierten lokalen Speicher und Bedienung mit der Tastatur. Neue Screenshots entstehen direkt aus der App im Actions-Lauf.
+
+[Prüfprotokoll](docs/TESTING.md) · [Actions](https://github.com/dogenc/ASTRA/actions/workflows/desktop.yml)
 
 ## Quellen & Lizenz
 

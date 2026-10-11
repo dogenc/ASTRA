@@ -8,6 +8,8 @@ on:
       - 'tests/**'
       - 'package*.json'
       - '.github/workflows/desktop.yml'
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +33,13 @@ jobs:
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: node tests/browser.cjs
+      - name: Echte Dokumentationsaufnahmen erstellen
+        run: node scripts/gallery.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-gallery
+          path: docs/gallery/*.png
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -83,6 +92,7 @@ jobs:
           path: test-results/
           if-no-files-found: ignore
   release:
+    if: github.event_name != 'pull_request'
     needs: desktop
     runs-on: ubuntu-latest
     permissions:
@@ -130,3 +140,4 @@ jobs:
             Desktop-Pakete sind nicht mit einem kommerziellen Herausgeberzertifikat signiert
             und auf macOS nicht notarisiert. Betriebssysteme können deshalb Warnungen anzeigen.
             SHA256-Prüfsummen liegen bei. Quellen, Lizenzen und Modellgrenzen: NOTICE.md.
+

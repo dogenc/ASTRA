@@ -1,10 +1,18 @@
-# Prüfstand 1.0.0
+# Prüfstand 1.0.1
 
-Geprüft am 11.10.2026 unter Linux.
+Stand: 12.10.2026. Der aktuelle Actions-Lauf dokumentiert den geprüften Commit.
 
-- `npm test`: erfolgreich. Daten (10 Körper, 5.080 Sterne, 88 Sternbilder, 4 Phänomene), Schalenmodelle, Bahnen gegen JPL Horizons (max. 0,144°), Mond gegen Horizons (< 0,05°), Polaris-Höhe, Desktop-Protokollpfade.
-- `node tests/browser.cjs`: erfolgreich mit Playwright und headless Chromium (Software-WebGL). Desktop 1512 × 1000, Mobil 390 × 844. Alle 12 Himmelskörper inkl. Quellenlinks, Zeitsteuerung, Maßstab, innerer Aufbau, 88 Sternbilder, Suche, Ortswahl, Datumseingabe, vier Phänomene mit allen Schritten, Notizen nach Neuladen, PNG-Download, Quellen-Dialog. Keine JavaScript-Fehler, keine horizontale Überbreite auf dem Handy.
-- `xvfb-run node tests/desktop.cjs`: Electron-App unter Linux erfolgreich (lokales Protokoll, Navigation, Notizen, PNG-Export).
-- Neun echte Galerieaufnahmen mit `scripts/gallery.cjs` erstellt und visuell geprüft.
+## Lokal erfolgreich
 
-Grenzen: Kein Test auf physischem iPhone/Android, kein Safari-/Firefox-Durchlauf, keine unabhängige astronomiedidaktische Begutachtung. Native Windows-/macOS-Prüfung und Paketierung laufen im Release-Workflow; maßgeblich ist dessen Ergebnis.
+- `npm test`: NASA-Körperdaten, 5.080 Sterne, 88 Sternbilder, vier Phänomene, Bahnen gegen JPL-Horizons-Stichproben und Desktop-Protokollpfade.
+- Die zusätzlichen Tests verwenden die echte Three.js-Geometrie: Nordpolbeleuchtung bei allen vier Jahreszeiten, Verjüngung der Schattenkegel von der Sonne weg, vier Mondphasen, acht Planeten innerhalb der initialen Ansicht bei breitem und schmalem Format, Himmelszoom und Blickrichtung nach Neuzeichnen, Beschriftungen am Horizont, Bewegungsreduktion und retrograde Rotation von Venus und Uranus.
+
+## Automatisch auf GitHub
+
+- Browser: alle Körper mit Schnittansichten, alle Phänomenschritte, Suche, Ortswahl, Datumseingabe und Zeitgrenzen, Kamera nach Drag/Zoom und Ebenenwechsel, abgebrochene und ungültige Koordinaten, Dezimalkomma, blockierter lokaler Speicher, Leertaste auf einem fokussierten Button, Notizen, PNG-Export und Handyansicht.
+- Zehn Dokumentationsaufnahmen werden mit `scripts/gallery.cjs` direkt aus der App erzeugt und als `astra-gallery` gespeichert.
+- Native Electron-Prüfung auf Windows und macOS; erst nach erfolgreichen Prüfungen werden Pakete veröffentlicht.
+
+Der zuvor fehlgeschlagene Windows-Test betraf einen Timeout nach Neuladen. Die bereits vorhandene Korrektur des Wartekriteriums wurde übernommen; deren Actions-Lauf 38185168923 war erfolgreich. Das ist kein Ersatz für den neuen Prüflauf.
+
+Grenzen: kein Test auf physischem iPhone/Android, kein Safari-/Firefox-Durchlauf, keine unabhängige astronomiedidaktische Begutachtung. Horizons-Tests vergleichen geozentrische Richtungen zu einzelnen Referenzterminen; sie prüfen keine durchgehend gleich genaue topozentrische Sichtvorhersage. Schematische Größen, Licht, Schatten und innere Schichten bleiben ausdrücklich vereinfachte Lernmodelle.
