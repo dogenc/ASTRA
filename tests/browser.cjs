@@ -23,7 +23,7 @@ process.on('exit', () => server.kill());
     Studio.prototype.sky = function(...args) { window.__scene = this; return sky.apply(this, args); };
   });
   await page.locator('[data-mode=sky]').click(); await page.waitForFunction(() => document.querySelector('#scene-title').textContent === 'Der Himmel über dir');
-  assert.equal(await page.locator('#items .item').count(), 89); await page.screenshot({path: path.join(results, '03-himmel.png')});
+  assert.equal(await page.locator('#items .item').count(), 89); await page.locator('.skip').focus(); await page.keyboard.press('Enter'); assert.ok(page.url().endsWith('#sky/all')); assert.equal(await page.evaluate(() => document.activeElement.id), 'knowledge'); await page.screenshot({path: path.join(results, '03-himmel.png')});
   await page.fill('#search', 'Orion'); assert.equal(await page.locator('#items .item').count(), 1); await page.locator('#items .item').click();
   await page.waitForFunction(() => document.querySelector('#scene-title').textContent === 'Orion'); await page.fill('#search', '');
   await page.selectOption('#place', '2'); await page.waitForFunction(() => document.querySelector('#scene-subtitle').textContent.startsWith('München'));

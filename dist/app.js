@@ -152,6 +152,7 @@ try {
   try { studio = new Studio($('viewport'), pick => { if (pick?.id && state.mode === 'body') { route('body', pick.id); return; } $('picked').textContent = pick?.label || ''; $('picked').hidden = !pick?.label; }); $('loading').hidden = true; }
   catch (e) { $('loading').textContent = '3D nicht verfügbar. WebGL aktivieren oder einen aktuellen Browser verwenden. Lerntexte und Daten bleiben nutzbar.'; console.error(e); }
   document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => route(b.dataset.mode, b.dataset.mode === 'sky' ? 'all' : b.dataset.mode === 'process' ? 'phases' : 'system'));
+  document.querySelector('.skip').onclick = e => { e.preventDefault(); $('knowledge').focus(); $('knowledge').scrollIntoView({block: 'start'}); };
   $('search').oninput = renderList; $('only-visible').onchange = renderList;
   $('when').onchange = () => { const d = new Date($('when').value); if (!isNaN(d)) setTime(d); };
   $('now').onclick = () => setTime(new Date()); $('time-play').onclick = () => setTimePlaying(!state.timePlaying);

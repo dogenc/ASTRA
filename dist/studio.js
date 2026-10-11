@@ -150,7 +150,7 @@ export class Studio {
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.setAttribute('size', new THREE.Float32BufferAttribute(size, 1));
     const mat = new THREE.ShaderMaterial({transparent: true, depthWrite: false, uniforms: {scale: {value: this.renderer.getPixelRatio()}, visibility: {value: 1}}, vertexColors: true,
       vertexShader: 'attribute float size;varying vec3 vColor;uniform float scale;void main(){vColor=color;vec4 mv=modelViewMatrix*vec4(position,1.0);gl_PointSize=size*scale;gl_Position=projectionMatrix*mv;}',
-      fragmentShader: 'uniform float visibility;varying vec3 vColor;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,.0,d);gl_FragColor=vec4(vColor*(.6+.6*a),a*visibility);}'});
+      fragmentShader: 'uniform float visibility;varying vec3 vColor;void main(){float d=length(gl_PointCoord-.5);float a=1.-smoothstep(0.,.5,d);gl_FragColor=vec4(vColor*(.6+.6*a),a*visibility);}'});
     this.root.add(new THREE.Points(geo, mat));
     const linePts = [], labels = new THREE.Group(); this.root.add(labels);
     for (const c of constellations) {
@@ -233,7 +233,7 @@ export class Studio {
       };
     }
     if (id === 'seasons') {
-      sunGlow(new THREE.Vector3(0, 0, 0), 1.6); this.sunLight.intensity = 4; this.sunLight.position.set(0, 0, 0); this.ambient.intensity = .1;
+      sunDir.intensity = 0; sunGlow(new THREE.Vector3(0, 0, 0), 1.6); this.sunLight.intensity = 4; this.sunLight.position.set(0, 0, 0); this.ambient.intensity = .1;
       this.line(this.root, Array.from({length: 129}, (_, k) => new THREE.Vector3(Math.cos(k / 128 * Math.PI * 2) * 9, 0, Math.sin(k / 128 * Math.PI * 2) * 9)), '#aab6ff', .4);
       const pivot = new THREE.Group(); this.root.add(pivot); const tiltG = new THREE.Group(); tiltG.name = 'season-axis'; pivot.name = 'season-earth'; tiltG.rotation.z = -23.4 * D2R; pivot.add(tiltG);
       const earth = this.sphere(1.1, earthMat()); tiltG.add(earth); this.line(tiltG, [new THREE.Vector3(0, -1.8, 0), new THREE.Vector3(0, 1.8, 0)], '#ffd98a', .9);
@@ -275,6 +275,7 @@ export class Studio {
     return sp;
   }
   export(name) {
+    if (this.backgroundSphere) this.backgroundSphere.position.copy(this.camera.position);
     this.renderer.render(this.scene, this.camera);
     this.renderer.domElement.toBlob(blob => { if (!blob) { this.onPick?.({label: 'PNG konnte nicht erzeugt werden.'}); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `astra-${name.toLocaleLowerCase('de').replace(/[^a-z0-9äöüß]+/g, '-')}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
   }

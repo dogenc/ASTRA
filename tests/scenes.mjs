@@ -20,6 +20,7 @@ function studio(aspect = 1.5) {
   return s;
 }
 const s = studio(), update = s.process('seasons');
+assert.ok(!s.root.children.some(o => o.isDirectionalLight && o.intensity > 0), 'Seasons must be lit only from the Sun, not an overhead lamp');
 const earth = s.root.getObjectByName('season-earth'), axis = s.root.getObjectByName('season-axis');
 for (const [p, expected] of [[0, 0], [.25, 1], [.5, 0], [.75, -1]]) {
   update(p); s.root.updateMatrixWorld(true);
