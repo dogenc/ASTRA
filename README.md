@@ -122,11 +122,35 @@ Der Workflow veröffentlicht diese Dateien **erst nach erfolgreichen Daten-, Bro
 Für Entwickler:
 
 ```bash
-npm ci && npm test            # Daten, Bahnen gegen JPL Horizons, Desktop-Pfade
-node tests/browser.cjs        # Browser-Durchlauf (Playwright)
-cd desktop && npm ci && npm start
-python3 scripts/prepare_data.py   # Daten aus sources/ neu aufbereiten
+# Im Repository-Hauptordner:
+npm ci
+npm test
+npx playwright install chromium
+node tests/browser.cjs
+node scripts/gallery.cjs
+python3 scripts/prepare_data.py  # Optional: Daten aus sources/ neu aufbereiten
+
+# Desktop-App starten:
+cd desktop
+npm ci
+npm start
 ```
+
+## Technik und Bearbeitung
+
+Die Website läuft mit **HTML, CSS, JavaScript und Three.js 0.180.0** ohne Bundler. Electron verpackt dieselben lokalen Dateien für Windows und macOS; Python dient nur dem lokalen Webserver und der Datenaufbereitung.
+
+| Dateien | Aufgabe |
+|---|---|
+| `dist/index.html`, `dist/style.css` | Oberfläche, mobile Darstellung, Atlas-Navigation |
+| `dist/app.js` | Auswahl, Datum, Ort, Lernpanels und Notizen |
+| `dist/astro.js` | Bahnelemente, Koordinaten, Schalenaufbau und Lerntexte |
+| `dist/studio.js` | Three.js-Szenen, Kamera, Animationen und PNG-Export |
+| `dist/data/`, `dist/tex/`, `dist/vendor/` | Lokale Daten, Texturen und Bibliotheken |
+| `sources/`, `scripts/prepare_data.py` | Hinterlegte Originaldaten und Aufbereitung |
+| `scripts/gallery.cjs`, `docs/gallery/` | Echte Aufnahmen aus der laufenden App |
+| `desktop/` | Electron-App und Installer-Konfiguration |
+| `tests/`, `.github/workflows/desktop.yml` | Daten-, Geometrie-, Browser- und native Prüfungen |
 
 ## Die Atlas-Familie
 

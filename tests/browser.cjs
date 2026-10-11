@@ -34,7 +34,7 @@ process.on('exit', () => server.kill());
   const beforeSky = await page.evaluate(() => ({look: window.__scene.skyLook.slice(), fov: window.__scene.camera.fov}));
   await page.click('#lines'); await page.click('#names');
   const afterSky = await page.evaluate(() => ({look: window.__scene.skyLook.slice(), fov: window.__scene.camera.fov}));
-  assert.ok(Math.abs(afterSky.fov - beforeSky.fov) < .001 && afterSky.look.every((v, i) => Math.abs(v - beforeSky.look[i]) < .05)); await page.click('#time-play'); await page.waitForTimeout(900); await page.click('#time-play');
+  assert.ok(Math.abs(afterSky.fov - beforeSky.fov) < .001 && afterSky.look.every((v, i) => Math.abs(v - beforeSky.look[i]) < .05), JSON.stringify({beforeSky, afterSky})); await page.click('#time-play'); await page.waitForTimeout(900); await page.click('#time-play');
   await page.fill('#when', '2030-07-15T23:00'); await page.dispatchEvent('#when', 'change'); await page.waitForFunction(() => document.querySelector('#scene-subtitle').textContent.includes('2030'));
   await page.fill('#when', '2200-01-01T12:00'); await page.dispatchEvent('#when', 'change'); assert.ok((await page.inputValue('#when')).startsWith('2050-'));
   await page.fill('#when', '1790-01-01T12:00'); await page.dispatchEvent('#when', 'change'); assert.ok((await page.textContent('#scene-subtitle')).includes('1800'));

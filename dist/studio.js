@@ -12,7 +12,7 @@ export class Studio {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); this.renderer.setClearColor(0, 0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.15; host.append(this.renderer.domElement);
     this.camera = new THREE.PerspectiveCamera(40, 1, .01, 4000); this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = true; this.controls.autoRotateSpeed = .6; this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.controls.enableDamping = true; this.controls.autoRotateSpeed = .6; this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches; this.controls.enableDamping = !this.reducedMotion;
     this.ambient = new THREE.AmbientLight(0xbfcaff, .35); this.scene.add(this.ambient);
     this.sunLight = new THREE.PointLight(0xfff3dd, 3.2, 0, 0); this.scene.add(this.sunLight);
     this.key = new THREE.DirectionalLight(0xfff6e8, 3); this.key.position.set(-8, 3, 6); this.scene.add(this.key);
@@ -29,7 +29,7 @@ export class Studio {
     this.renderer.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); this.active = false; onPick({label: 'Grafikkontext verloren. Bitte die Seite neu laden.'}); });
     this.renderer.domElement.addEventListener('wheel', e => { if (!this.skyMode) return; e.preventDefault(); this.camera.fov = THREE.MathUtils.clamp(this.camera.fov * (e.deltaY > 0 ? 1.08 : .92), 15, 100); this.camera.updateProjectionMatrix(); }, {passive: false});
     let previous = performance.now();
-    this.renderer.setAnimationLoop(now => { const dt = Math.min((now - previous) / 1000, .05); previous = now; if (document.hidden || !this.active) return; this.time += dt; this.tick(this.time, dt); this.controls.update(); this.renderer.render(this.scene, this.camera); });
+    this.renderer.setAnimationLoop(now => { const dt = Math.min((now - previous) / 1000, .05); previous = now; if (document.hidden || !this.active) return; this.time += dt; this.tick(this.time, dt); this.controls.update(); if (this.backgroundSphere) this.backgroundSphere.position.copy(this.camera.position); this.renderer.render(this.scene, this.camera); });
     this.controls.addEventListener('change', () => {
       if (!this.skyMode) return;
       const dir = this.camera.getWorldDirection(new THREE.Vector3());
@@ -43,8 +43,8 @@ export class Studio {
     return this.cache[name];
   }
   view(dist, dir = [.25, .35, 1], target = [0, 0, 0]) {
-    this.skyMode = false; this.camera.fov = 40; this.camera.near = .01; this.camera.updateProjectionMatrix();
-    this.controls.enableZoom = true; this.controls.enablePan = false; this.controls.rotateSpeed = 1; this.controls.minDistance = dist * .25; this.controls.maxDistance = dist * 6;
+    this.skyMode = false; this.camera.fov = 40; this.camera.near = .01; this.camera.far = Math.max(4000, dist * 8 / Math.min(1, this.host.clientWidth / Math.max(this.host.clientHeight, 1)) + 2000); this.camera.updateProjectionMatrix();
+    this.controls.enableDamping = !this.reducedMotion; this.controls.enableZoom = true; this.controls.enablePan = false; this.controls.rotateSpeed = 1; this.controls.minDistance = dist * .25; this.controls.maxDistance = dist * 6;
     const aspect = this.host.clientWidth / Math.max(this.host.clientHeight, 1), d = dist / Math.min(1, aspect), v = new THREE.Vector3(...dir).normalize().multiplyScalar(d);
     this.controls.target.set(...target); this.camera.position.set(target[0] + v.x, target[1] + v.y, target[2] + v.z); this.controls.update(); this.homeView = [dist, dir, target];
   }
@@ -52,7 +52,7 @@ export class Studio {
   clear() {
     this.tick = () => {}; this.pickables = []; this.skyMode = false; this.controls.autoRotate = false;
     this.root.traverse(o => { o.geometry?.dispose(); if (o.material) for (const m of (Array.isArray(o.material) ? o.material : [o.material])) { if (m.map && !Object.values(this.cache).includes(m.map)) m.map.dispose(); m.dispose(); } });
-    this.root.clear(); this.root.rotation.set(0, 0, 0); this.scene.background = null; this.sunLight.intensity = 3.2; this.key.intensity = 0; this.ambient.intensity = .35;
+    this.root.clear(); this.backgroundSphere = null; this.root.rotation.set(0, 0, 0); this.scene.background = null; this.sunLight.intensity = 3.2; this.key.intensity = 0; this.ambient.intensity = .35;
   }
   label(parent, text, pos, {color = '#e9ecff', size = 1, bg = '#0e1430cc', screen = false} = {}) {
     const c = document.createElement('canvas'), ctx = c.getContext('2d'); ctx.font = '600 40px Inter,sans-serif'; const w = Math.ceil(ctx.measureText(text).width) + 44;
@@ -66,7 +66,7 @@ export class Studio {
     const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color, transparent: true, opacity, depthWrite: false})); parent.add(l); return l;
   }
   sphere(r, mat, seg = 64) { return new THREE.Mesh(new THREE.SphereGeometry(r, seg, seg / 2), mat); }
-  starfield() { const bg = this.sphere(1800, new THREE.MeshBasicMaterial({map: this.texture('milkyway.jpg'), side: THREE.BackSide, color: 0x8a90a8, depthWrite: false}), 48); bg.renderOrder = -1; this.root.add(bg); }
+  starfield() { const bg = this.sphere(1800, new THREE.MeshBasicMaterial({map: this.texture('milkyway.jpg'), side: THREE.BackSide, color: 0x8a90a8, depthWrite: false}), 48); bg.renderOrder = -1; this.backgroundSphere = bg; bg.position.copy(this.camera.position); this.root.add(bg); }
 
   /* ---------- Sonnensystem ---------- */
   system(jd, real = false) {
@@ -176,7 +176,7 @@ export class Studio {
     this.line(this.root, Array.from({length: 129}, (_, k) => new THREE.Vector3(Math.sin(k / 128 * Math.PI * 2) * R * .9, 0, -Math.cos(k / 128 * Math.PI * 2) * R * .9)), '#9fb2d8', .6);
     [['N', 0], ['NO', 45], ['O', 90], ['SO', 135], ['S', 180], ['SW', 225], ['W', 270], ['NW', 315]].forEach(([t, az]) => this.label(labels, t, toVec(1.5, az).multiplyScalar(.85), {color: '#ffd98a', size: t.length > 1 ? .8 : 1.1, bg: '#0b1410cc'}));
     this.camera.near = .01; this.camera.fov = savedFov; this.camera.updateProjectionMatrix();
-    this.controls.autoRotate = false; this.controls.enableZoom = false; this.controls.enablePan = false; this.controls.rotateSpeed = -.35; this.controls.minDistance = .01; this.controls.maxDistance = .02;
+    this.controls.enableDamping = false; this.controls.autoRotate = false; this.controls.enableZoom = false; this.controls.enablePan = false; this.controls.rotateSpeed = -.35; this.controls.minDistance = .01; this.controls.maxDistance = .02;
     if (!this.skyHome) this.skyHome = [25, 180];
     this.lookAt(...(savedLook || this.skyHome)); this.dayness = dayness; this.sunAlt = sunAlt;
   }

@@ -24,7 +24,7 @@ function setTime(date, redraw = true) {
   if (!Number.isFinite(date.getTime())) return;
   const t = Math.min(MAX, Math.max(MIN, date.getTime()));
   if (t !== date.getTime()) { setTimePlaying(false); toast('Die Bahndaten gelten von 1800 bis 2050.'); }
-  state.date = new Date(t); $('when').value = localValue(state.date);
+  state.date = new Date(t); if (!state.timePlaying || document.activeElement !== $('when')) $('when').value = localValue(state.date);
   if (!redraw) return;
   if (state.mode === 'body' && state.id === 'system') { studio?.place?.(julian(state.date)); systemFacts(); }
   if (state.mode === 'sky') drawSky();
@@ -46,7 +46,7 @@ function renderList() {
   const list = listFor(state.mode), q = $('search').value.toLocaleLowerCase('de'), onlyVisible = state.mode === 'sky' && $('only-visible').checked;
   const rows = list.map(x => ({x, aa: state.mode === 'sky' ? skyAlt(x) : null})).filter(({x, aa}) => `${x.name || x.de} ${x.la || ''} ${x.kind || ''}`.toLocaleLowerCase('de').includes(q) && (!onlyVisible || !aa || aa[0] > 0));
   if (state.mode === 'sky') rows.sort((a, b) => a.x.id === 'all' ? -1 : b.x.id === 'all' ? 1 : a.x.de.localeCompare(b.x.de, 'de'));
-  $('count').textContent = `${rows.length} ${state.mode === 'sky' ? 'Einträge' : state.mode === 'process' ? 'Phänomene' : 'Himmelskörper'}`;
+  $('count').textContent = state.mode === 'body' ? `${rows.filter(({x}) => x.id !== 'system').length} Himmelskörper${rows.some(({x}) => x.id === 'system') ? ' · Übersicht' : ''}` : `${rows.length} ${state.mode === 'sky' ? 'Einträge' : 'Phänomene'}`;
   $('items').replaceChildren(...rows.map(({x, aa}) => {
     const b = document.createElement('button'), active = x.id === state.id; b.className = 'item' + (active ? ' active' : '') + (aa && aa[0] < 0 ? ' below' : ''); b.setAttribute('aria-pressed', String(active));
     const sub = state.mode === 'sky' ? (aa ? (aa[0] > 0 ? `${x.la} · ${Math.round(aa[0])}° hoch` : `${x.la} · unter dem Horizont`) : x.la) : state.mode === 'process' ? x.formula : x.kind;
