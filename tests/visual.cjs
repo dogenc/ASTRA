@@ -16,6 +16,7 @@ process.on('exit', () => server.kill());
     await page.waitForFunction(id => window.__scene?.pickables.some(o => o.userData.pick?.label === ({earth: 'Erde', mercury: 'Merkur', moon: 'Mond', saturn: 'Saturn'})[id]) && document.querySelector('#viewport canvas').dataset.textureState === 'ready', id, {timeout: 60000});
     await page.waitForTimeout(300);
     const quality = await page.evaluate(() => { const s = window.__scene, c = s.renderer.domElement; return {canvas: [c.width, c.height], css: [s.host.clientWidth, s.host.clientHeight], dpr: s.renderer.getPixelRatio(), maps: Object.entries(s.cache).filter(([name]) => /^(hq|4k)\//.test(name)).map(([name, t]) => ({name, width: t.image.width})), textures: s.renderer.info.memory.textures, lost: s.renderer.getContext().isContextLost()}; });
+    if (config.touch) assert.ok(await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('#search')).fontSize) >= 16), 'Mobile inputs must avoid iOS focus zoom');
     assert.equal(quality.lost, false); assert.ok(quality.canvas[0] * quality.canvas[1] <= 8_010_000, 'Render pixel budget');
     assert.ok(Math.abs(quality.canvas[0] - quality.css[0] * quality.dpr) <= 1, 'HiDPI canvas width');
     assert.ok(quality.maps.length > 0 && quality.maps.every(t => t.width >= 4096), JSON.stringify(quality));
