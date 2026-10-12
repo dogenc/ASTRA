@@ -6,6 +6,8 @@ on:
       - 'dist/**'
       - 'desktop/**'
       - 'tests/**'
+      - 'scripts/**'
+      - 'docs/release-notes.md'
       - 'package*.json'
       - '.github/workflows/desktop.yml'
   pull_request:
@@ -19,7 +21,9 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,31 +33,62 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install Pillow==11.3.0
+      - run: python scripts/prepare_textures.py --verify
       - run: npm ci
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: node tests/browser.cjs
+      - name: HiDPI-Darstellung und Beschriftungen prüfen
+        run: node tests/visual.cjs
       - name: Echte Dokumentationsaufnahmen erstellen
         run: node scripts/gallery.cjs
+      - name: Geprüfte Screenshots als Git-Dateien bereitstellen
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        run: node scripts/stage_gallery.cjs
+        env:
+          GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: astra-gallery
           path: docs/gallery/*.png
           if-no-files-found: error
+          retention-days: 3
       - uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
           name: browser-quality
           path: test-results/
           if-no-files-found: ignore
-  desktop:
+          retention-days: 3
+  prepare:
+    if: github.event_name != 'pull_request'
     needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Release-Entwurf vorbereiten
+        run: node scripts/release.cjs prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+  desktop:
+    needs: [quality, prepare]
+    if: always() && needs.quality.result == 'success' && (github.event_name == 'pull_request' || needs.prepare.result == 'success')
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 35
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -78,19 +113,19 @@ jobs:
         working-directory: desktop
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: installer-${{ runner.os }}
-          path: |
-            desktop/release/*.exe
-            desktop/release/*.dmg
-          if-no-files-found: error
+      - name: Geprüfte Installer direkt im Entwurf ablegen
+        if: github.event_name != 'pull_request'
+        run: node scripts/release.cjs upload
+        env:
+          GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
           name: desktop-quality-${{ runner.os }}
           path: test-results/
           if-no-files-found: ignore
+          retention-days: 3
   release:
     if: github.event_name != 'pull_request'
     needs: desktop
@@ -99,45 +134,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/setup-node@v4
         with:
-          pattern: installer-*
-          path: release-assets
-          merge-multiple: true
-      - name: Version und Web-Paket
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./desktop/package.json').version")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          python - <<'PY'
-          import pathlib,zipfile,json
-          version=json.loads(pathlib.Path('desktop/package.json').read_text())['version']
-          with zipfile.ZipFile(f'release-assets/ASTRA-{version}-Web.zip','w',zipfile.ZIP_DEFLATED) as out:
-              for p in pathlib.Path('dist').rglob('*'):
-                  if p.is_file(): out.write(p,p.relative_to('dist'))
-              for name in ['LICENSE','NOTICE.md']: out.write(name,name)
-          PY
-          (cd release-assets && sha256sum *.exe *.dmg *.zip > SHA256SUMS.txt)
-      - name: Geprüfte Downloads veröffentlichen
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          target_commitish: ${{ github.sha }}
-          name: ASTRA ${{ steps.version.outputs.version }} · DGKN@Labs
-          fail_on_unmatched_files: true
-          files: release-assets/*
-          body: |
-            ## ASTRA · Das Universum in 3D
-            - Windows: Setup oder portable EXE (x64)
-            - macOS: Universal-DMG (Intel + Apple Silicon)
-            - Web: statisches ZIP für die eigene Domain, kein Build nötig
-
-            Enthält das Sonnensystem mit JPL-Bahnen (1800–2050), elf Himmelskörper mit innerem Aufbau,
-            5.080 Sterne und 88 Sternbilder für jeden Ort sowie vier animierte Himmelsphänomene.
-            Daten, Texturen und Bibliotheken werden lokal mitgeliefert.
-
-            Desktop-Pakete sind nicht mit einem kommerziellen Herausgeberzertifikat signiert
-            und auf macOS nicht notarisiert. Betriebssysteme können deshalb Warnungen anzeigen.
-            SHA256-Prüfsummen liegen bei. Quellen, Lizenzen und Modellgrenzen: NOTICE.md.
-
+          node-version: 22
+      - name: Build-Nachweise vergleichen und vollständiges Release veröffentlichen
+        run: node scripts/release.cjs publish
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -71,7 +71,7 @@ s.sky(stars, cons, 2461300.5, 51.514, 7.466); s.lookAt(40, 90); s.camera.fov = 3
 s.sky(stars, cons, 2461300.6, 51.514, 7.466);
 assert.equal(s.camera.fov, 35); assert.ok(Math.abs(s.skyLook[0] - 40) < .001 && Math.abs(s.skyLook[1] - 90) < .001);
 for (const b of s.visible.filter(b => b.alt <= 0)) assert.equal(s.root.getObjectByName(b.name), undefined, `${b.name}: label leaks through ground`);
-s.controls.autoRotate = true; s.body(bodies.find(b => b.id === 'earth'), {rotation: 24, obliquity: 23.4}); assert.equal(s.controls.autoRotate, false);
+s.controls.autoRotate = true; s.body(bodies.find(b => b.id === 'earth'), {rotation: 24, obliquity: 23.4}); assert.equal(s.controls.autoRotate, false); assert.ok(s.controls.minDistance > 2.024, 'Camera must remain outside body and cloud surfaces');
 s.reducedMotion = true; s.body(bodies.find(b => b.id === 'earth'), {rotation: 24, obliquity: 23.4}); assert.equal(s.spinning, false);
 for (const id of ['venus', 'uranus']) {
   s.reducedMotion = false; s.body(bodies.find(b => b.id === id), {rotation: -24, obliquity: id === 'venus' ? 177.4 : 97.8});

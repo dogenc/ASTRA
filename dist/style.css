@@ -13,3 +13,18 @@
 .layer{display:flex;align-items:center;gap:8px;font-size:11px;margin:6px 0}.layer i{width:12px;height:12px;border-radius:3px}
 .compare{font-size:11px;color:var(--muted);margin:10px 0 0}.compare b{color:#262c4a}
 @media(max-width:650px){.time-controls{padding:10px 12px 2px}.time-controls label{font-size:10px}}
+
+
+.texture-status { position: absolute; left: 16px; bottom: 16px; padding: 7px 11px; border: 1px solid #ffffff25; border-radius: 8px; background: #10162be6; color: #e1e6ff; font-size: 12px; pointer-events: none; }
+
+/* Legible controls and source notes; large enough to avoid iOS form zoom. */
+.scene-bottom { font-size: 11px; color: #b0b8d6; }
+.toolbar button { font-size: 12px; }
+.item b { font-size: 12px; }
+.item small, .fact small { font-size: 11px; }
+.legend, #source-link, .knowledge .attribution { font-size: 12px; }
+.steps button { font-size: 11px; }
+@media (max-width: 720px) {
+  .search input, .time-controls input, .time-controls select, #note { font-size: 16px; }
+  .time-controls input, .time-controls select { max-width: 100%; }
+}

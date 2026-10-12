@@ -1,10 +1,10 @@
 {
   "name": "astra",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/data.mjs && node tests/desktop-paths.cjs && node --import ./tests/register-three.mjs tests/scenes.mjs"
+    "test": "node tests/data.mjs && node tests/desktop-paths.cjs && node --import ./tests/register-three.mjs tests/scenes.mjs && node tests/release.cjs"
   },
   "devDependencies": {
     "playwright": "1.63.0"

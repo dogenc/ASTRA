@@ -9,8 +9,10 @@ export class Studio {
   constructor(host, onPick) {
     this.host = host; this.onPick = onPick; this.scene = new THREE.Scene(); this.tex = new THREE.TextureLoader(); this.cache = {};
     this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, preserveDrawingBuffer: true});
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); this.renderer.setClearColor(0, 0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.setClearColor(0, 0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.15; host.append(this.renderer.domElement);
+    this.renderer.domElement.dataset.textureState = 'ready';
+    this.textureStatus = document.createElement('div'); this.textureStatus.className = 'texture-status'; this.textureStatus.setAttribute('role', 'status'); this.textureStatus.textContent = 'Bilddetails werden geladen …'; this.textureStatus.hidden = true; host.append(this.textureStatus);
     this.camera = new THREE.PerspectiveCamera(40, 1, .01, 4000); this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true; this.controls.autoRotateSpeed = .6; this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches; this.controls.enableDamping = !this.reducedMotion;
     this.ambient = new THREE.AmbientLight(0xbfcaff, .35); this.scene.add(this.ambient);
@@ -29,7 +31,7 @@ export class Studio {
     this.renderer.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); this.active = false; onPick({label: 'Grafikkontext verloren. Bitte die Seite neu laden.'}); });
     this.renderer.domElement.addEventListener('wheel', e => { if (!this.skyMode) return; e.preventDefault(); this.camera.fov = THREE.MathUtils.clamp(this.camera.fov * (e.deltaY > 0 ? 1.08 : .92), 15, 100); this.camera.updateProjectionMatrix(); }, {passive: false});
     let previous = performance.now();
-    this.renderer.setAnimationLoop(now => { const dt = Math.min((now - previous) / 1000, .05); previous = now; if (document.hidden || !this.active) return; this.time += dt; this.tick(this.time, dt); this.controls.update(); if (this.backgroundSphere) this.backgroundSphere.position.copy(this.camera.position); this.renderer.render(this.scene, this.camera); });
+    this.renderer.setAnimationLoop(now => { const dt = Math.min((now - previous) / 1000, .05); previous = now; if (document.hidden || !this.active) return; this.time += dt; this.tick(this.time, dt); this.controls.update(); if (this.backgroundSphere) this.backgroundSphere.position.copy(this.camera.position); this.layoutLabels(); this.renderer.render(this.scene, this.camera); });
     this.controls.addEventListener('change', () => {
       if (!this.skyMode) return;
       const dir = this.camera.getWorldDirection(new THREE.Vector3());
@@ -37,10 +39,20 @@ export class Studio {
     });
     this.resize();
   }
-  resize() { const w = this.host.clientWidth, h = this.host.clientHeight; if (!w || !h) return; const aspect = w / h; if (this.homeView && !this.skyMode) { const factor = Math.min(1, this.camera.aspect) / Math.min(1, aspect); this.camera.position.sub(this.controls.target).multiplyScalar(factor).add(this.controls.target); } this.camera.aspect = aspect; this.camera.updateProjectionMatrix(); this.renderer.setSize(w, h); }
-  texture(name) {
-    if (!this.cache[name]) { const t = this.tex.load(`tex/${name}`); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; this.cache[name] = t; }
-    return this.cache[name];
+  resize() { const w = this.host.clientWidth, h = this.host.clientHeight; if (!w || !h) return; const aspect = w / h; if (this.homeView && !this.skyMode) { const factor = Math.min(1, this.camera.aspect) / Math.min(1, aspect); this.camera.position.sub(this.controls.target).multiplyScalar(factor).add(this.controls.target); } this.camera.aspect = aspect; this.camera.updateProjectionMatrix(); this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 3, Math.sqrt(8_000_000 / (w * h)))); this.renderer.setSize(w, h); if (this.skyPointMaterial) this.skyPointMaterial.uniforms.scale.value = this.renderer.getPixelRatio(); }
+  texture(name, detailed = false) {
+    const enhanced = ['mercury.jpg', 'venus.jpg', 'earth.jpg', 'earth-clouds.jpg', 'mars.jpg', 'jupiter.jpg', 'saturn.jpg', 'saturn-ring.png', 'sun.jpg', 'moon.jpg', 'milkyway.jpg'].includes(name);
+    const smallGPU = matchMedia('(pointer: coarse)').matches || (navigator.deviceMemory && navigator.deviceMemory <= 4) || this.renderer.capabilities.maxTextureSize < 8192;
+    const level = detailed && enhanced && this.renderer.capabilities.maxTextureSize >= 4096 ? (smallGPU || name === 'earth-clouds.jpg' || name === 'milkyway.jpg' ? '4k/' : 'hq/') : '';
+    const key = level + name;
+    if (!this.cache[key]) {
+      const canvas = this.renderer.domElement; this.pendingTextures = (this.pendingTextures || 0) + 1; canvas.dataset.textureState = 'loading';
+      this.textureStatus.hidden = false;
+      const finish = () => { this.pendingTextures--; canvas.dataset.textureState = this.pendingTextures ? 'loading' : this.textureFailed ? 'error' : 'ready'; this.textureStatus.hidden = !this.pendingTextures; };
+      const t = this.tex.load(`tex/${key}`, finish, undefined, () => { this.textureFailed = true; finish(); this.onPick?.({label: 'Eine Oberflächentextur konnte nicht geladen werden. Bitte die Ansicht neu laden.'}); });
+      t.colorSpace = name === 'earth-clouds.jpg' ? THREE.NoColorSpace : THREE.SRGBColorSpace; t.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy()); this.cache[key] = t;
+    }
+    return this.cache[key];
   }
   view(dist, dir = [.25, .35, 1], target = [0, 0, 0]) {
     this.skyMode = false; this.camera.fov = 40; this.camera.near = .01; this.camera.far = Math.max(4000, dist * 8 / Math.min(1, this.host.clientWidth / Math.max(this.host.clientHeight, 1)) + 2000); this.camera.updateProjectionMatrix();
@@ -58,21 +70,39 @@ export class Studio {
   clear() {
     this.tick = () => {}; this.pickables = []; this.skyMode = false; this.controls.autoRotate = false;
     this.root.traverse(o => { o.geometry?.dispose(); if (o.material) for (const m of (Array.isArray(o.material) ? o.material : [o.material])) { if (m.map && !Object.values(this.cache).includes(m.map)) m.map.dispose(); m.dispose(); } });
-    this.root.clear(); this.backgroundSphere = null; this.root.rotation.set(0, 0, 0); this.scene.background = null; this.sunLight.intensity = 3.2; this.key.intensity = 0; this.ambient.intensity = .35;
+    this.root.clear(); this.managedLabels = []; this.skyPointMaterial = null; this.backgroundSphere = null; this.root.rotation.set(0, 0, 0); this.scene.background = null; this.sunLight.intensity = 3.2; this.key.intensity = 0; this.ambient.intensity = .35;
+    // Large maps belong to the current scene; browsing all bodies must not retain gigabytes of GPU textures.
+    for (const key of Object.keys(this.cache)) if (key !== 'glow') { this.cache[key].dispose(); delete this.cache[key]; }
   }
-  label(parent, text, pos, {color = '#e9ecff', size = 1, bg = '#0e1430cc', screen = false} = {}) {
+  label(parent, text, pos, {color = '#e9ecff', size = 1, bg = '#0e1430cc', screen = false, priority = 50} = {}) {
     const c = document.createElement('canvas'), ctx = c.getContext('2d'); ctx.font = '600 40px Inter,sans-serif'; const w = Math.ceil(ctx.measureText(text).width) + 44;
-    c.width = w; c.height = 72; ctx.font = '600 40px Inter,sans-serif'; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(4, 6, w - 8, 60, 30); ctx.fill();
+    c.width = w * 2; c.height = 144; ctx.scale(2, 2); ctx.font = '600 40px Inter,sans-serif'; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(4, 6, w - 8, 60, 30); ctx.fill();
     ctx.fillStyle = color; ctx.textBaseline = 'middle'; ctx.fillText(text, 22, 38);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: t, depthTest: false, transparent: true, sizeAttenuation: !this.skyMode && !screen}));
-    const h = screen ? .024 * size : this.skyMode ? .085 * size : .55 * size; sp.scale.set(h * w / 72, h, 1); sp.center.set(.5, -.35); sp.position.copy(pos); sp.renderOrder = 10; parent.add(sp); return sp;
+    const h = screen ? .024 * size : this.skyMode ? .085 * size : .55 * size; sp.scale.set(h * w / 72, h, 1); sp.center.set(.5, -.35); sp.position.copy(pos); sp.renderOrder = 10; parent.add(sp);
+    if (screen || this.skyMode) { sp.center.set(.5, 0); sp.userData.label = {text, ratio: w / 72, height: this.skyMode ? 28 * size : 24, priority}; (this.managedLabels ||= []).push(sp); }
+    return sp;
+  }
+  layoutLabels() {
+    if (!this.managedLabels?.length) return;
+    this.scene.updateMatrixWorld(true); this.camera.updateMatrixWorld();
+    const width = this.host.clientWidth, height = this.host.clientHeight, accepted = [], tan = Math.tan(this.camera.fov * D2R / 2);
+    for (const sp of [...this.managedLabels].sort((a, b) => b.userData.label.priority - a.userData.label.priority)) {
+      const meta = sp.userData.label, h = meta.height, w = h * meta.ratio, v = sp.getWorldPosition(new THREE.Vector3()).project(this.camera);
+      sp.scale.set(2 * tan * w / height, 2 * tan * h / height, 1);
+      const x = (v.x + 1) * width / 2, y = (1 - v.y) * height / 2;
+      const rect = {left: x - w / 2, right: x + w / 2, top: y - h, bottom: y};
+      sp.visible = v.z >= -1 && v.z <= 1 && rect.left >= 6 && rect.right <= width - 6 && rect.top >= 6 && rect.bottom <= height - 6 && !accepted.some(r => rect.left < r.right + 5 && rect.right > r.left - 5 && rect.top < r.bottom + 5 && rect.bottom > r.top - 5);
+      if (sp.visible) accepted.push(rect);
+      sp.userData.screenRect = sp.visible ? rect : null;
+    }
   }
   line(parent, pts, color, opacity = .5) {
     const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color, transparent: true, opacity, depthWrite: false})); parent.add(l); return l;
   }
   sphere(r, mat, seg = 64) { return new THREE.Mesh(new THREE.SphereGeometry(r, seg, seg / 2), mat); }
-  starfield() { const bg = this.sphere(1800, new THREE.MeshBasicMaterial({map: this.texture('milkyway.jpg'), side: THREE.BackSide, color: 0x8a90a8, depthWrite: false}), 48); bg.renderOrder = -1; this.backgroundSphere = bg; bg.position.copy(this.camera.position); this.root.add(bg); }
+  starfield() { const bg = this.sphere(1800, new THREE.MeshBasicMaterial({map: this.texture('milkyway.jpg', true), side: THREE.BackSide, color: 0x8a90a8, depthWrite: false}), 48); bg.renderOrder = -1; this.backgroundSphere = bg; bg.position.copy(this.camera.position); this.root.add(bg); }
 
   /* ---------- Sonnensystem ---------- */
   system(jd, real = false) {
@@ -105,10 +135,10 @@ export class Studio {
     g.addColorStop(0, 'rgba(255,240,200,1)'); g.addColorStop(.25, 'rgba(255,190,90,.55)'); g.addColorStop(1, 'rgba(255,150,40,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
     return this.cache.glow = new THREE.CanvasTexture(c);
   }
-  rings(r) {
-    const geo = new THREE.RingGeometry(r * 1.24, r * 2.27, 128, 1), pos = geo.attributes.position, uv = geo.attributes.uv, v = new THREE.Vector3();
+  rings(r, detailed = false) {
+    const geo = new THREE.RingGeometry(r * 1.24, r * 2.27, 256, 1), pos = geo.attributes.position, uv = geo.attributes.uv, v = new THREE.Vector3();
     for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); uv.setXY(i, (v.length() - r * 1.24) / (r * 1.03), .5); }
-    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({map: this.texture('saturn-ring.png'), color: 0xf0e2c0, transparent: true, side: THREE.DoubleSide, depthWrite: false, roughness: 1, emissive: 0x3a3226, emissiveMap: this.texture('saturn-ring.png')}));
+    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({map: this.texture('saturn-ring.png', detailed), color: 0xf0e2c0, transparent: true, side: THREE.DoubleSide, depthWrite: false, roughness: 1, emissive: 0x3a3226, emissiveMap: this.texture('saturn-ring.png', detailed)}));
     m.rotation.x = -Math.PI / 2; return m;
   }
 
@@ -117,11 +147,11 @@ export class Studio {
     this.clear(); this.starfield(); this.sunLight.intensity = 0; this.key.intensity = meta.id === 'sun' ? 0 : 3.3; this.ambient.intensity = meta.id === 'sun' ? 1 : .22;
     const R = 2, tilt = (facts?.obliquity ?? meta.tilt ?? 0) * D2R, pivot = new THREE.Group(); pivot.rotation.z = -tilt; this.root.add(pivot);
     const spin = new THREE.Group(); pivot.add(spin);
-    const matFor = r => meta.id === 'sun' ? new THREE.MeshBasicMaterial({map: this.texture('sun.jpg'), side: THREE.DoubleSide}) : new THREE.MeshStandardMaterial({map: meta.tex ? this.texture(meta.tex + '.jpg') : null, color: meta.tex ? 0xffffff : meta.color, roughness: 1, metalness: 0, side: THREE.DoubleSide});
-    const shell = cutaway ? new THREE.Mesh(new THREE.SphereGeometry(R, 96, 48, Math.PI * .25, Math.PI * 1.5), matFor(R)) : this.sphere(R, matFor(R), 96);
+    const matFor = r => meta.id === 'sun' ? new THREE.MeshBasicMaterial({map: this.texture('sun.jpg', true), side: THREE.DoubleSide}) : new THREE.MeshStandardMaterial({map: meta.tex ? this.texture(meta.tex + '.jpg', true) : null, color: meta.tex ? 0xffffff : meta.color, roughness: 1, metalness: 0, side: THREE.DoubleSide});
+    const shell = cutaway ? new THREE.Mesh(new THREE.SphereGeometry(R, 96, 48, Math.PI * .25, Math.PI * 1.5), matFor(R)) : this.sphere(R, matFor(R), 128);
     shell.userData.pick = {label: meta.name}; spin.add(shell); this.pickables.push(shell);
-    if (meta.clouds && !cutaway) { const cl = this.sphere(R * 1.012, new THREE.MeshStandardMaterial({alphaMap: this.texture('earth-clouds.jpg'), transparent: true, depthWrite: false, color: 0xffffff, roughness: 1}), 96); spin.add(cl); this.clouds = cl; } else this.clouds = null;
-    if (meta.ring) pivot.add(this.rings(R));
+    if (meta.clouds && !cutaway) { const cl = this.sphere(R * 1.012, new THREE.MeshStandardMaterial({alphaMap: this.texture('earth-clouds.jpg', true), transparent: true, depthWrite: false, color: 0xffffff, roughness: 1}), 96); spin.add(cl); this.clouds = cl; } else this.clouds = null;
+    if (meta.ring) pivot.add(this.rings(R, true));
     if (meta.id === 'sun' && !cutaway) { const glow = new THREE.Sprite(new THREE.SpriteMaterial({map: this.glowTexture(), color: 0xffb84d, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); glow.scale.setScalar(R * 4.4); this.root.add(glow); }
     const axis = this.line(pivot, [new THREE.Vector3(0, -R * 1.45, 0), new THREE.Vector3(0, R * 1.45, 0)], '#ffd98a', .7);
     if (cutaway) {
@@ -149,6 +179,7 @@ export class Studio {
       for (const point of [[0, -2.9, 0], [0, 2.9, 0]]) points.push(new THREE.Vector3(...point).applyMatrix4(pivot.matrixWorld));
       this.fit(points, cutaway ? [-1, .35, .25] : [.25, .5, 1]);
     } else this.view(6.4, cutaway ? [-1, .35, .25] : [.15, .2, 1]);
+    this.controls.minDistance = R * 1.25; // Keep the camera outside the surface at maximum zoom.
   }
 
   /* ---------- Himmel ---------- */
@@ -162,15 +193,15 @@ export class Studio {
     const mat = new THREE.ShaderMaterial({transparent: true, depthWrite: false, uniforms: {scale: {value: this.renderer.getPixelRatio()}, visibility: {value: 1}}, vertexColors: true,
       vertexShader: 'attribute float size;varying vec3 vColor;uniform float scale;void main(){vColor=color;vec4 mv=modelViewMatrix*vec4(position,1.0);gl_PointSize=size*scale;gl_Position=projectionMatrix*mv;}',
       fragmentShader: 'uniform float visibility;varying vec3 vColor;void main(){float d=length(gl_PointCoord-.5);float a=1.-smoothstep(0.,.5,d);gl_FragColor=vec4(vColor*(.6+.6*a),a*visibility);}'});
-    this.root.add(new THREE.Points(geo, mat));
+    this.skyPointMaterial = mat; this.root.add(new THREE.Points(geo, mat));
     const linePts = [], labels = new THREE.Group(); this.root.add(labels);
     for (const c of constellations) {
       for (const seg of c.lines) for (let k = 1; k < seg.length; k++) { const a = altAz(seg[k - 1][0], seg[k - 1][1], jd, lat, lon), b = altAz(seg[k][0], seg[k][1], jd, lat, lon); linePts.push(toVec(...a).multiplyScalar(.995), toVec(...b).multiplyScalar(.995)); }
       const [alt, az] = altAz(c.center[0], c.center[1], jd, lat, lon); c.altAz = [alt, az];
-      if (showNames && c.rank <= 2 && alt > 0) this.label(labels, c.de, toVec(alt, az).multiplyScalar(.98), {color: '#b9c6ff', size: .8, bg: '#00000000'});
+      if (showNames && (c.rank <= 2 || this.focusConstellation === c.id) && alt > 0) this.label(labels, c.de, toVec(alt, az).multiplyScalar(.98), {color: '#b9c6ff', size: 1, bg: '#00000000', priority: this.focusConstellation === c.id ? 90 : 50});
     }
     if (showLines) this.root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(linePts), new THREE.LineBasicMaterial({color: '#7f93ff', transparent: true, opacity: .45, depthWrite: false})));
-    if (showNames) for (const s of stars) if (s[4] && s[2] < 1.6) { const [alt, az] = altAz(s[0], s[1], jd, lat, lon); if (alt > 0) this.label(labels, s[4], toVec(alt, az), {color: '#fff4dc', size: .7, bg: '#00000000'}); }
+    if (showNames) for (const s of stars) if (s[4] && s[2] < 1.6) { const [alt, az] = altAz(s[0], s[1], jd, lat, lon); if (alt > 0) this.label(labels, s[4], toVec(alt, az), {color: '#fff4dc', size: .85, bg: '#00000000', priority: 40 - s[2]}); }
     // Sonne, Mond und Planeten
     const bodies = [['sun', 'Sonne', '#ffd56b', 9], ['moon', 'Mond', '#f2f0e6', 7], ['mercury', 'Merkur', '#d8cfc6', 3.5], ['venus', 'Venus', '#fff3d0', 5], ['mars', 'Mars', '#ff8a5c', 4], ['jupiter', 'Jupiter', '#ffe9c4', 4.5], ['saturn', 'Saturn', '#f2dcaa', 4], ['uranus', 'Uranus', '#bfeef2', 3], ['neptune', 'Neptun', '#8fa8ff', 3]];
     this.visible = [];
@@ -178,7 +209,7 @@ export class Studio {
       const [ra, dec] = geocentric(id, jd), [alt, az] = altAz(ra, dec, jd, lat, lon), v = toVec(alt, az).multiplyScalar(.97);
       const m = this.sphere(s * .12, new THREE.MeshBasicMaterial({color}), 20); m.position.copy(v); m.userData.pick = {label: `${name} · Höhe ${alt.toFixed(0)}°`}; this.root.add(m); this.pickables.push(m);
       if (id === 'sun') { const glow = new THREE.Sprite(new THREE.SpriteMaterial({map: this.glowTexture(), color: 0xffd27a, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); glow.scale.setScalar(9); glow.position.copy(v); this.root.add(glow); }
-      if (showNames && alt > 0) this.label(labels, name, v, {color, size: .75}); this.visible.push({id, name, alt, az});
+      if (showNames && alt > 0) this.label(labels, name, v, {color, size: .9, priority: 80}); this.visible.push({id, name, alt, az});
     }
     // Horizont: Boden, Himmelsrichtungen, Dämmerung
     const sunAlt = this.visible[0].alt, dayness = THREE.MathUtils.clamp((sunAlt + 12) / 18, 0, 1);
@@ -187,7 +218,7 @@ export class Studio {
     const ground = new THREE.Mesh(new THREE.SphereGeometry(R * .9, 64, 32, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), new THREE.MeshBasicMaterial({color: new THREE.Color().lerpColors(new THREE.Color('#0b1410'), new THREE.Color('#2e4a35'), dayness), side: THREE.DoubleSide}));
     ground.position.y = -.3; this.root.add(ground);
     this.line(this.root, Array.from({length: 129}, (_, k) => new THREE.Vector3(Math.sin(k / 128 * Math.PI * 2) * R * .9, 0, -Math.cos(k / 128 * Math.PI * 2) * R * .9)), '#9fb2d8', .6);
-    [['N', 0], ['NO', 45], ['O', 90], ['SO', 135], ['S', 180], ['SW', 225], ['W', 270], ['NW', 315]].forEach(([t, az]) => this.label(labels, t, toVec(1.5, az).multiplyScalar(.85), {color: '#ffd98a', size: t.length > 1 ? .8 : 1.1, bg: '#0b1410cc'}));
+    [['N', 0], ['NO', 45], ['O', 90], ['SO', 135], ['S', 180], ['SW', 225], ['W', 270], ['NW', 315]].forEach(([t, az]) => this.label(labels, t, toVec(1.5, az).multiplyScalar(.85), {color: '#ffd98a', size: t.length > 1 ? .8 : 1.1, bg: '#0b1410cc', priority: 100}));
     this.camera.near = .01; this.camera.fov = savedFov; this.camera.updateProjectionMatrix();
     this.controls.enableDamping = false; this.controls.autoRotate = false; this.controls.enableZoom = false; this.controls.enablePan = false; this.controls.rotateSpeed = -.35; this.controls.minDistance = .01; this.controls.maxDistance = .02;
     if (!this.skyHome) this.skyHome = [25, 180];
@@ -277,7 +308,7 @@ export class Studio {
     };
   }
   phaseInset() {
-    const c = document.createElement('canvas'); c.width = c.height = 256; const ctx = c.getContext('2d'), tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+    const c = document.createElement('canvas'); c.width = c.height = 768; const ctx = c.getContext('2d'); ctx.scale(3, 3); const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, depthTest: false, transparent: true})); sp.scale.set(3.2, 3.2, 1); sp.position.set(0, 4.2, 0); sp.renderOrder = 12;
     sp.userData.draw = (elong, red = 0) => { // elong: 0 = Neumond … π = Vollmond
       ctx.clearRect(0, 0, 256, 256); ctx.fillStyle = '#0d1230ee'; ctx.beginPath(); ctx.roundRect(8, 8, 240, 240, 26); ctx.fill();
@@ -294,6 +325,7 @@ export class Studio {
     const finish = () => { this.exporting = false; this.active = resume && !this.renderer.getContext().isContextLost(); };
     try {
       if (this.backgroundSphere) this.backgroundSphere.position.copy(this.camera.position);
+      this.layoutLabels();
       this.renderer.render(this.scene, this.camera);
       // Stop submitting new frames until the GPU readback has finished, especially on software renderers.
       this.renderer.domElement.toBlob(blob => {

@@ -1,96 +1,96 @@
 {
- "name": "astra-desktop",
- "productName": "ASTRA",
- "version": "1.0.1",
- "description": "ASTRA – interaktiver 3D-Weltraum-Atlas von DGKN@Labs",
- "author": "DGKN@Labs",
- "license": "MIT",
- "private": true,
- "main": "main.cjs",
- "homepage": "https://github.com/dogenc/ASTRA",
- "scripts": {
-  "start": "electron .",
-  "dist:win": "electron-builder --win --publish never",
-  "dist:mac": "electron-builder --mac --publish never"
- },
- "devDependencies": {
-  "electron": "44.5.1",
-  "electron-builder": "26.15.3"
- },
- "build": {
-  "appId": "de.dgknlabs.astra",
+  "name": "astra-desktop",
   "productName": "ASTRA",
-  "copyright": "© 2026 DGKN@Labs",
-  "directories": {
-   "output": "release",
-   "buildResources": "build"
+  "version": "1.0.2",
+  "description": "ASTRA – interaktiver 3D-Weltraum-Atlas von DGKN@Labs",
+  "author": "DGKN@Labs",
+  "license": "MIT",
+  "private": true,
+  "main": "main.cjs",
+  "homepage": "https://github.com/dogenc/ASTRA",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never"
   },
-  "files": [
-   "main.cjs",
-   "paths.cjs",
-   "package.json",
-   "build/icon.png"
-  ],
-  "extraResources": [
-   {
-    "from": "../dist",
-    "to": "app"
-   },
-   {
-    "from": "../LICENSE",
-    "to": "LICENSE.txt"
-   },
-   {
-    "from": "../NOTICE.md",
-    "to": "NOTICE.md"
-   }
-  ],
-  "artifactName": "ASTRA-${version}-${os}-${arch}.${ext}",
-  "win": {
-   "target": [
-    {
-     "target": "nsis",
-     "arch": [
-      "x64"
-     ]
+  "devDependencies": {
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "de.dgknlabs.astra",
+    "productName": "ASTRA",
+    "copyright": "© 2026 DGKN@Labs",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
     },
-    {
-     "target": "portable",
-     "arch": [
-      "x64"
-     ]
+    "files": [
+      "main.cjs",
+      "paths.cjs",
+      "package.json",
+      "build/icon.png"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist",
+        "to": "app"
+      },
+      {
+        "from": "../LICENSE",
+        "to": "LICENSE.txt"
+      },
+      {
+        "from": "../NOTICE.md",
+        "to": "NOTICE.md"
+      }
+    ],
+    "artifactName": "ASTRA-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ASTRA",
+      "artifactName": "ASTRA-${version}-Windows-Setup.exe"
+    },
+    "portable": {
+      "artifactName": "ASTRA-${version}-Windows-portable.exe"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "category": "public.app-category.education",
+      "icon": "build/icon.png",
+      "identity": "-",
+      "artifactName": "ASTRA-${version}-macOS.dmg"
+    },
+    "dmg": {
+      "title": "ASTRA · Das Universum in 3D"
     }
-   ],
-   "icon": "build/icon.png"
-  },
-  "nsis": {
-   "oneClick": false,
-   "perMachine": false,
-   "allowToChangeInstallationDirectory": true,
-   "createDesktopShortcut": true,
-   "createStartMenuShortcut": true,
-   "shortcutName": "ASTRA",
-   "artifactName": "ASTRA-${version}-Windows-Setup.exe"
-  },
-  "portable": {
-   "artifactName": "ASTRA-${version}-Windows-portable.exe"
-  },
-  "mac": {
-   "target": [
-    {
-     "target": "dmg",
-     "arch": [
-      "universal"
-     ]
-    }
-   ],
-   "category": "public.app-category.education",
-   "icon": "build/icon.png",
-   "identity": "-",
-   "artifactName": "ASTRA-${version}-macOS.dmg"
-  },
-  "dmg": {
-   "title": "ASTRA · Das Universum in 3D"
   }
- }
 }
