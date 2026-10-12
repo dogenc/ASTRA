@@ -289,9 +289,18 @@ export class Studio {
     return sp;
   }
   export(name) {
-    if (this.backgroundSphere) this.backgroundSphere.position.copy(this.camera.position);
-    this.renderer.render(this.scene, this.camera);
-    this.renderer.domElement.toBlob(blob => { if (!blob) { this.onPick?.({label: 'PNG konnte nicht erzeugt werden.'}); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `astra-${name.toLocaleLowerCase('de').replace(/[^a-z0-9äöüß]+/g, '-')}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
+    if (this.exporting) return;
+    this.exporting = true; const resume = this.active; this.active = false;
+    const finish = () => { this.exporting = false; this.active = resume && !this.renderer.getContext().isContextLost(); };
+    try {
+      if (this.backgroundSphere) this.backgroundSphere.position.copy(this.camera.position);
+      this.renderer.render(this.scene, this.camera);
+      // Stop submitting new frames until the GPU readback has finished, especially on software renderers.
+      this.renderer.domElement.toBlob(blob => {
+        finish();
+        if (!blob) { this.onPick?.({label: 'PNG konnte nicht erzeugt werden.'}); return; }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `astra-${name.toLocaleLowerCase('de').replace(/[^a-z0-9äöüß]+/g, '-')}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }, 'image/png');
+    } catch { finish(); this.onPick?.({label: 'PNG konnte nicht erzeugt werden.'}); }
   }
 }
-
