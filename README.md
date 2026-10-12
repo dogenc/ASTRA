@@ -61,7 +61,7 @@ Die Planetenpositionen stammen aus den Keplerschen Bahnelementen des **JPL** (E.
 
 ## Echte Einblicke
 
-Acht echte Aufnahmen aus ASTRA 1.0.0 mit **1800 × 1160 Pixeln**, dazu eine Handyansicht. Keine Mockups.
+Neun echte Desktop-Aufnahmen aus ASTRA 1.0.1 mit **1800 × 1160 Pixeln**, dazu eine Handyansicht. Direkt aus der laufenden App erzeugt und verlustfrei als WebP gespeichert.
 
 ![ASTRA Sonnensystem mit echten Bahnen](docs/gallery/01-sonnensystem.webp)
 
@@ -77,9 +77,13 @@ Acht echte Aufnahmen aus ASTRA 1.0.0 mit **1800 × 1160 Pixeln**, dazu eine Hand
 |---|---|
 | ![Erstes Viertel mit Blick von der Erde](docs/gallery/06-mondphasen.webp) | ![Der Mond im Erdschatten](docs/gallery/07-mondfinsternis.webp) |
 
+![Sommeranfang: Die Nordhalbkugel ist zur Sonne geneigt](docs/gallery/10-jahreszeiten.webp)
+
 | Leben eines Sterns | Auf dem Smartphone |
 |---|---|
 | ![Roter Riese](docs/gallery/08-roter-riese.webp) | <img src="docs/gallery/09-mobil.webp" width="270" alt="ASTRA auf dem Handy mit Jupiter und Navigation zu allen fünf Atlanten"> |
+
+[**Galerie in voller Auflösung →**](docs/gallery/)
 
 ## Starten
 

@@ -19,7 +19,15 @@ const {_electron} = require('playwright'), assert = require('node:assert/strict'
     await app.evaluate(({BrowserWindow}, dest) => { globalThis.downloadEvents = []; globalThis.saved = new Promise(resolve => BrowserWindow.getAllWindows()[0].webContents.session.once('will-download', (_e, item) => { globalThis.downloadEvents.push({event: 'started', name: item.getFilename()}); item.setSavePath(dest); item.on('updated', (_e, state) => globalThis.downloadEvents.push({event: 'updated', state, bytes: item.getReceivedBytes()})); item.once('done', (_e, state) => { globalThis.downloadEvents.push({event: 'done', state}); resolve(state); }); })); }, destination);
     await page.evaluate(() => document.querySelector('#export').click()); const downloadState = await app.evaluate(() => Promise.race([globalThis.saved, new Promise(r => setTimeout(() => r('timeout'), 90000))])); const downloadEvents = await app.evaluate(() => globalThis.downloadEvents); fs.writeFileSync(path.join(result, 'desktop-download.json'), JSON.stringify({downloadState, downloadEvents, errors}, null, 2)); assert.equal(downloadState, 'completed', JSON.stringify(downloadEvents));
     const png = fs.readFileSync(destination); assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a'); assert.ok(png.length > 10000, 'PNG must contain rendered content'); assert.equal(png.readUInt32BE(16), graphics.width); assert.equal(png.readUInt32BE(20), graphics.height);
-    await page.screenshot({path: path.join(result, 'desktop.png')}); assert.deepEqual(errors, []);
+    // Screenshot capture is diagnostic; the mandatory native checks already verified a real rendered PNG download.
+    const capture = await app.evaluate(async ({BrowserWindow}, dest) => {
+      const win = BrowserWindow.getAllWindows()[0];
+      const image = await Promise.race([win.webContents.capturePage(), new Promise(resolve => setTimeout(() => resolve(null), 15000))]);
+      if (!image || image.isEmpty()) return false;
+      require('node:fs').writeFileSync(dest, image.toPNG()); return true;
+    }, path.join(result, 'desktop.png'));
+    if (!capture) console.warn('Native window screenshot unavailable on this CI compositor; rendered PNG export verified.');
+    assert.deepEqual(errors, []);
     console.log('PASS Electron: lokales Protokoll, Sonnensystem, Himmel, Phänomene, Notizen, PNG');
   } finally { await app.close(); fs.rmSync(profile, {recursive: true, force: true}); }
 })().catch(e => { console.error(e); process.exit(1); });
