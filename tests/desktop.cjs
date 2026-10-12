@@ -4,7 +4,7 @@ const {_electron} = require('playwright'), assert = require('node:assert/strict'
   const app = await _electron.launch({executablePath: require('../desktop/node_modules/electron'), args: [path.resolve('desktop/main.cjs'), '--enable-unsafe-swiftshader', ...(process.platform === 'win32' ? ['--use-gl=angle', '--use-angle=swiftshader-webgl'] : [])], env: {...process.env, ASTRA_TEST_USER_DATA: profile}, timeout: 60000});
   try {
     const page = await app.firstWindow(), errors = []; page.on('pageerror', e => errors.push(e.message)); page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-    const ready = () => page.waitForFunction(() => document.querySelector('canvas') && document.querySelector('#loading').hidden, null, {polling: 500, timeout: 90000});
+    const ready = () => page.waitForFunction(() => document.querySelector('canvas') && document.querySelector('#loading').hidden && document.querySelector('#viewport canvas').dataset.textureState === 'ready', null, {polling: 500, timeout: 90000});
     await ready(); assert.ok(page.url().startsWith('astra://app/'));
     assert.equal(await page.locator('.atlas-family nav a').count(), 5);
     for (const hash of ['body/system', 'body/saturn', 'sky/all', 'sky/UMa', 'process/eclipse']) { await page.evaluate(h => { location.hash = h; }, hash); await page.waitForTimeout(400); }

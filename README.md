@@ -21,7 +21,7 @@ W E L T R A U M A T L A S  ·  3 D  ·  O P E N  S O U R C E
 **Von der Sonne bis zu den Sternen über deinem Ort.**  
 Ein interaktiver Weltraum-Atlas auf Deutsch — direkt im Browser.
 
-![Version](https://img.shields.io/badge/Version-1.0.1-4a54b8?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-1.0.2-4a54b8?style=for-the-badge)
 ![Himmelskörper](https://img.shields.io/badge/Himmelskörper-11-4a54b8?style=for-the-badge)
 ![Sterne](https://img.shields.io/badge/Sterne-5.080-4a54b8?style=for-the-badge)
 ![Sternbilder](https://img.shields.io/badge/Sternbilder-88-4a54b8?style=for-the-badge)
@@ -59,9 +59,15 @@ Die Planetenpositionen stammen aus den Keplerschen Bahnelementen des **JPL** (E.
 - **Direktlinks**, beispielsweise `#body/saturn`, `#sky/Ori`, `#process/eclipse`.
 - **Tastatur:** Tab navigiert, Leertaste startet/pausiert Zeit oder Ablauf, R setzt die Kamera zurück.
 
+## Bildqualität
+
+Die Einzelansichten laden Originalkarten bis **8K**. Auf mobilen Geräten und GPUs mit kleinerem Texturlimit nutzt ASTRA echte **4K-Ableitungen**; die Sonnensystemübersicht bleibt kompakt. Uranus und Neptun verwenden die verfügbaren 2K-Originalkarten. Es werden keine Details durch Hochskalieren vorgetäuscht. Große Texturen werden beim Ansichtswechsel freigegeben.
+
+Der 3D-Bereich berücksichtigt die Pixeldichte des Displays bis 3×, mit einem Budget von acht Millionen Renderpixeln. Himmels- und Übersichtsnamen behalten eine lesbare Bildschirmgröße; konkurrierende Namen werden nach Priorität eingeblendet. Alle Einträge bleiben über die Liste auswählbar. Originalmaße, Quell-URLs und Prüfsummen: [Texturmanifest](dist/tex/manifest.json).
+
 ## Echte Einblicke
 
-Neun echte Desktop-Aufnahmen aus ASTRA 1.0.1 mit **1800 × 1160 Pixeln**, dazu eine Handyansicht. Direkt aus der laufenden App erzeugt und verlustfrei als WebP gespeichert.
+Neun echte Desktop-Aufnahmen aus ASTRA 1.0.2 mit **1800 × 1160 Pixeln**, dazu eine Handyansicht. Direkt aus der laufenden App erzeugt und verlustfrei als WebP gespeichert.
 
 ![ASTRA Sonnensystem mit echten Bahnen](docs/gallery/01-sonnensystem.webp)
 
@@ -115,13 +121,13 @@ Den Inhalt von **`dist/`** als Website ausliefern — beispielsweise mit Cloudfl
 
 | Paket | Verwendung |
 |---|---|
-| `ASTRA-1.0.1-Windows-Setup.exe` | Installierbare Windows-App, x64 |
-| `ASTRA-1.0.1-Windows-portable.exe` | Ohne Installation starten, x64 |
-| `ASTRA-1.0.1-macOS.dmg` | macOS-App für Intel und Apple Silicon |
-| `ASTRA-1.0.1-Web.zip` | Statische Dateien für die eigene Domain |
+| `ASTRA-1.0.2-Windows-Setup.exe` | Installierbare Windows-App, x64 |
+| `ASTRA-1.0.2-Windows-portable.exe` | Ohne Installation starten, x64 |
+| `ASTRA-1.0.2-macOS.dmg` | macOS-App für Intel und Apple Silicon |
+| `ASTRA-1.0.2-Web.zip` | Statische Dateien für die eigene Domain |
 | `SHA256SUMS.txt` | Prüfsummen der Downloads |
 
-Der Workflow veröffentlicht diese Dateien **erst nach erfolgreichen Daten-, Browser- und nativen Desktop-Prüfungen**. Die Pakete sind ohne kommerzielles Herausgeberzertifikat; macOS ist nicht notarisiert. Das Betriebssystem kann deshalb Warnungen anzeigen.
+Der Workflow veröffentlicht diese Dateien **erst nach erfolgreichen Daten-, Browser- und nativen Desktop-Prüfungen**. Installer werden direkt in einem Release-Entwurf bereitgestellt; Diagnose-Artefakte sind optional. Vor der Freigabe werden Quellcommit, Workflow-ID und SHA256 der beiden Plattform-Builds verglichen. Die Pakete sind ohne kommerzielles Herausgeberzertifikat; macOS ist nicht notarisiert. Das Betriebssystem kann deshalb Warnungen anzeigen.
 
 Für Entwickler:
 
@@ -166,9 +172,9 @@ Die Website läuft mit **HTML, CSS, JavaScript und Three.js 0.180.0** ohne Bundl
 | 04 · [ELEMENTA](https://github.com/dogenc/ELEMENTA) | Die Materie verstehen |
 | **05 · ASTRA** | **Das Universum verstehen** |
 
-## Qualitätsprüfung 1.0.1
+## Qualitätsprüfung 1.0.2
 
-`npm test` prüft zusätzlich die echte Three.js-Geometrie: Ausrichtung der Erdachse zu allen vier Jahreszeiten, Schattenrichtung, Mondphasen, die Übersicht aller acht Planeten, erhaltene Himmelsansicht und Zoom, Horizontbeschriftungen sowie die rückläufige Rotation von Venus und Uranus. Der Browser-Test prüft außerdem Zeitgrenzen, Ortseingaben, blockierten lokalen Speicher und Bedienung mit der Tastatur. Neue Screenshots entstehen direkt aus der App im Actions-Lauf.
+`npm test` prüft zusätzlich die echte Three.js-Geometrie: Ausrichtung der Erdachse zu allen vier Jahreszeiten, Schattenrichtung, Mondphasen, die Übersicht aller acht Planeten, erhaltene Himmelsansicht und Zoom, Horizontbeschriftungen sowie die rückläufige Rotation von Venus und Uranus. Der Browser-Test prüft außerdem Zeitgrenzen, Ortseingaben, blockierten lokalen Speicher und Bedienung mit der Tastatur. Neue Screenshots entstehen direkt aus der App im Actions-Lauf. `tests/visual.cjs` prüft Retina- und mobile Pixeldichte, Texturauflösung, Speicherfreigabe sowie Beschriftungen bei verschiedenen Blickrichtungen und Zoomstufen. `python scripts/prepare_textures.py --verify` prüft die mitgelieferten Bilddateien offline.
 
 [Prüfprotokoll](docs/TESTING.md) · [Actions](https://github.com/dogenc/ASTRA/actions/workflows/desktop.yml)
 

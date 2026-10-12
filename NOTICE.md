@@ -24,7 +24,7 @@ D. Hoffleit, W. H. Warren Jr.: *The Bright Star Catalogue*, 5th Revised Ed., Yal
 
 ## Texturen – Solar System Scope
 
-[Solar System Scope Textures](https://www.solarsystemscope.com/textures/) von INOVE, **CC BY 4.0**. Für ASTRA auf 2K belassen, als JPEG neu komprimiert; die Wolkentextur wurde in Graustufen umgewandelt. Pluto hat keine Textur und wird einfarbig dargestellt.
+[Solar System Scope Textures](https://www.solarsystemscope.com/textures/) von INOVE, **CC BY 4.0**. Die Übersicht verwendet kompakte 2K-Karten. Einzelansichten verwenden geprüfte Quellkarten bis 8192 × 4096 Pixel; die tatsächlich gelieferten Karten von Sonne, Jupiter, Saturn und Venus haben 4096 × 2048 Pixel. Auf mobilen Geräten und kleineren GPUs werden echte 4K-Ableitungen verwendet. Uranus und Neptun bleiben in der verfügbaren 2K-Quellauflösung, ohne künstliches Hochskalieren. Wolkenmasken werden ohne Farbkorrektur ausgewertet. Merkur und Mond wurden bei voller 8K-Auflösung mit JPEG-Qualität 85 und 4:2:0-Farbunterabtastung neu kodiert; keine Karte wird hochskaliert. Die Herstellerkarten enthalten teils ergänztes Gelände in noch nicht kartierten Bereichen und betonte Farben; sie sind keine aktuellen Satellitenaufnahmen. Dateimaße, SHA256-Prüfsummen, Quell-URLs und Urheber stehen in `dist/tex/manifest.json` (Abruf 12.10.2026). Pluto hat keine Textur und wird einfarbig dargestellt.
 
 ## Three.js
 
@@ -32,7 +32,7 @@ Three.js **0.180.0**, einschließlich OrbitControls, MIT-Lizenz. Unveränderte B
 
 ## Modellgrenzen
 
-- **Größen und Abstände:** In der kompakten Ansicht sind Abstände gestaucht (Potenzfunktion) und Planeten stark vergrößert. „Echte Abstände“ ist bei den Abständen maßstäblich, die Planeten bleiben vergrößert.
+- **Größen und Abstände:** In der kompakten Ansicht sind Abstände logarithmisch gestaucht und Planeten stark vergrößert. „Echte Abstände“ ist bei den Abständen maßstäblich, die Planeten bleiben vergrößert.
 - **Innerer Aufbau:** Schichtgrenzen gerundet und schematisch. Das Innere von Jupiter, Saturn, Uranus und Neptun ist wissenschaftlich unsicher.
 - **Rotation:** In der Einzelansicht beschleunigt; die Richtung (z. B. rückläufig bei Venus) stimmt.
 - **Sternenhimmel:** Keine Präzession, Nutation, Eigenbewegung oder atmosphärische Refraktion; Sterne für J2000. Abweichung im Jahr 2026 bis etwa 0,4°. Dämmerungsfarben vereinfacht.
