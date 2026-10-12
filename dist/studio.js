@@ -76,7 +76,7 @@ export class Studio {
   }
   label(parent, text, pos, {color = '#e9ecff', size = 1, bg = '#0e1430cc', screen = false, priority = 50} = {}) {
     const c = document.createElement('canvas'), ctx = c.getContext('2d'); ctx.font = '600 40px Inter,sans-serif'; const w = Math.ceil(ctx.measureText(text).width) + 44;
-    c.width = w; c.height = 72; ctx.font = '600 40px Inter,sans-serif'; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(4, 6, w - 8, 60, 30); ctx.fill();
+    c.width = w * 2; c.height = 144; ctx.scale(2, 2); ctx.font = '600 40px Inter,sans-serif'; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(4, 6, w - 8, 60, 30); ctx.fill();
     ctx.fillStyle = color; ctx.textBaseline = 'middle'; ctx.fillText(text, 22, 38);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: t, depthTest: false, transparent: true, sizeAttenuation: !this.skyMode && !screen}));

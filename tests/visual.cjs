@@ -31,8 +31,9 @@ process.on('exit', () => server.kill());
    for (const fov of [15, 35, 70, 100]) for (const az of [0, 90, 180, 270]) {
     const state = await page.evaluate(({fov, az}) => {
      const s = window.__scene; s.camera.fov = fov; s.camera.updateProjectionMatrix(); s.lookAt(30, az); s.layoutLabels();
-     return {width: s.host.clientWidth, height: s.host.clientHeight, labels: s.managedLabels.filter(o => o.visible).map(o => ({text: o.userData.label.text, ...o.userData.screenRect}))};
+     return {width: s.host.clientWidth, height: s.host.clientHeight, sampled: s.managedLabels.every(o => o.material.map.image.height >= o.userData.label.height * s.renderer.getPixelRatio()), labels: s.managedLabels.filter(o => o.visible).map(o => ({text: o.userData.label.text, ...o.userData.screenRect}))};
     }, {fov, az});
+    assert.ok(state.sampled, 'Label raster must cover the actual display pixel density');
     for (let i = 0; i < state.labels.length; i++) {
      const a = state.labels[i]; assert.ok(a.left >= 0 && a.right <= state.width && a.top >= 0 && a.bottom <= state.height, `Clipped label: ${a.text}`);
      for (const b of state.labels.slice(i + 1)) assert.ok(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom, `Overlapping ${a.text}/${b.text}`);
