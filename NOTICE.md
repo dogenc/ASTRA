@@ -40,3 +40,12 @@ Three.js **0.180.0**, einschließlich OrbitControls, MIT-Lizenz. Unveränderte B
 - Die Lerntexte sind eigene, KI-unterstützt erstellte Kurzfassungen. Eine unabhängige fachredaktionelle Abnahme steht aus.
 
 ASTRA ist ein unabhängiges Projekt von DGKN@Labs und kein Produkt der NASA, des JPL, des CDS oder der genannten Autorinnen und Autoren; es wird von ihnen weder unterstützt noch empfohlen.
+
+
+## Fachliche Korrekturen in 1.0.1
+
+Die Jahreszeiten zeigen eine im Raum feste, um 23,4° geneigte Erdachse; bei Sommeranfang ist der Nordpol zur Sonne geneigt. Quelle: NASA Space Place, [What Causes the Seasons?](https://spaceplace.nasa.gov/seasons/), geprüft 12.10.2026. Erd- und Mondkernschatten verjüngen sich von der Sonne weg. Die Darstellungen bleiben schematisch.
+
+Venus: Rotation um die eigene Achse und Sonnentag werden getrennt erklärt. Obliquität über 90° und negatives Vorzeichen der tabellierten Rotationsperiode werden im 3D-Modell nicht doppelt als Richtungsumkehr angewendet. Körperdaten sind der hinterlegte NASA-Quellstand; insbesondere Mondzahlen werden nicht als laufend aktuell ausgegeben.
+
+Die Himmelsansicht verwendet geozentrische Koordinaten ohne topozentrische Mondparallaxe; nahe dem Horizont kann deren Auslassung eine Abweichung bis ungefähr 1° verursachen. Die angeführten Horizons-Stichproben prüfen die geozentrischen Koordinaten und garantieren keine allgemeine Beobachtungsgenauigkeit. Planeten über dem Horizont können durch Tageslicht, Wetter und Lichtverschmutzung unsichtbar bleiben.

@@ -16,7 +16,7 @@ export const ELEMENTS = {
   uranus: [[19.18916464, -0.00196176], [0.04725744, -0.00004397], [0.77263783, -0.00242939], [313.23810451, 428.48202785], [170.95427630, 0.40805281], [74.01692503, 0.04240589]],
   neptune: [[30.06992276, 0.00026291], [0.00859048, 0.00005105], [1.77004347, 0.00035372], [-55.12002969, 218.45945325], [44.96476227, -0.32241464], [131.78422574, -0.00508664]],
 };
-// Pluto: mittlere Elemente (JPL Small-Body Database, Epoche J2000), ohne Störungen – nur zur Veranschaulichung.
+// Pluto: mittlere Elemente (frühere Fassung der JPL-Bahnelementtabelle, Epoche J2000), ohne Störungen – nur zur Veranschaulichung.
 ELEMENTS.pluto = [[39.48211675, -0.00031596], [0.24882730, 0.00005170], [17.14001206, 0.00004818], [238.92903833, 145.20780515], [224.06891629, -0.04062942], [110.30393684, -0.01183482]];
 
 export const julian = date => date.getTime() / 86400000 + 2440587.5;
@@ -90,7 +90,7 @@ export const siderealDeg = (jd, lonDeg) => norm360(280.46061837 + 360.9856473662
 /** Höhe und Azimut (Grad; Azimut ab Nord über Ost). */
 export function altAz(raDeg, decDeg, jd, lat, lon) {
   const H = (siderealDeg(jd, lon) - raDeg) * D2R, d = decDeg * D2R, p = lat * D2R;
-  const alt = Math.asin(Math.sin(p) * Math.sin(d) + Math.cos(p) * Math.cos(d) * Math.cos(H));
+  const alt = Math.asin(Math.max(-1, Math.min(1, Math.sin(p) * Math.sin(d) + Math.cos(p) * Math.cos(d) * Math.cos(H))));
   const az = Math.atan2(-Math.cos(d) * Math.sin(H), Math.sin(d) * Math.cos(p) - Math.cos(d) * Math.sin(p) * Math.cos(H));
   return [alt * R2D, norm360(az * R2D)];
 }
@@ -138,10 +138,10 @@ export const layers = {
 };
 
 export const texts = {
-  system: ['Ein Stern. Acht Welten.', 'Alle Planeten kreisen in fast derselben Ebene um die Sonne – ein Überbleibsel der rotierenden Scheibe, aus der vor 4,6 Milliarden Jahren alles entstand. Die inneren vier sind klein und felsig, die äußeren vier riesig und gasförmig.', 'Die Positionen werden für das gewählte Datum aus den Bahnelementen des JPL berechnet. In der kompakten Ansicht sind Abstände gestaucht und Planeten stark vergrößert – sonst wären sie unsichtbar klein.'],
+  system: ['Ein Stern. Acht Welten.', 'Alle Planeten kreisen in fast derselben Ebene um die Sonne – ein Überbleibsel der rotierenden Scheibe, aus der vor 4,6 Milliarden Jahren alles entstand. Die inneren vier sind klein und felsig, die äußeren vier sind Gas- oder Eisriesen mit dichten Atmosphären.', 'Die Positionen werden für das gewählte Datum aus den Bahnelementen des JPL berechnet. In der kompakten Ansicht sind Abstände gestaucht und Planeten stark vergrößert – sonst wären sie unsichtbar klein.'],
   sun: ['Unser Stern.', 'Die Sonne vereint 99,8 % der Masse des Sonnensystems. In ihrem Kern verschmilzt Wasserstoff zu Helium – bei rund 15 Millionen Grad. Die Energie braucht zehntausende Jahre bis zur Oberfläche und dann nur gut 8 Minuten bis zur Erde.', 'Die Sonne ist ein ganz gewöhnlicher Stern der Hauptreihe. Schau nie ohne geeigneten Schutz direkt hinein.'],
-  mercury: ['Klein, schnell, extrem.', 'Merkur rast in nur 88 Tagen um die Sonne. Ohne nennenswerte Atmosphäre schwankt die Temperatur zwischen über 400 °C am Tag und unter −170 °C in der Nacht. Sein Eisenkern füllt einen ungewöhnlich großen Teil des Planeten.', 'Ein Merkurtag (Sonnenaufgang bis Sonnenaufgang) dauert länger als zwei Merkurjahre.'],
-  venus: ['Die Treibhaus-Hölle.', 'Venus ist fast so groß wie die Erde, aber unter dichten Schwefelsäurewolken herrschen 464 °C und der 92-fache Luftdruck. Der Treibhauseffekt ihrer Kohlendioxid-Atmosphäre macht sie heißer als Merkur.', 'Venus dreht sich rückwärts – und so langsam, dass ein Venustag länger dauert als ihr Jahr.'],
+  mercury: ['Klein, schnell, extrem.', 'Merkur rast in nur 88 Tagen um die Sonne. Ohne nennenswerte Atmosphäre schwankt die Temperatur zwischen über 400 °C am Tag und unter −170 °C in der Nacht. Sein Eisenkern füllt einen ungewöhnlich großen Teil des Planeten.', 'Ein Merkurtag (Sonnenaufgang bis Sonnenaufgang) dauert etwa zwei Merkurjahre.'],
+  venus: ['Die Treibhaus-Hölle.', 'Venus ist fast so groß wie die Erde, aber unter dichten Schwefelsäurewolken herrschen 464 °C und der 92-fache Luftdruck. Der Treibhauseffekt ihrer Kohlendioxid-Atmosphäre macht sie heißer als Merkur.', 'Venus dreht sich rückwärts – und so langsam, dass eine Drehung um die eigene Achse (243 Erdtage) länger dauert als ihr Jahr (225 Erdtage). Ein Sonnentag dauert dagegen etwa 117 Erdtage.'],
   earth: ['Unser Zuhause.', 'Die Erde ist der einzige bekannte Ort mit flüssigem Wasser an der Oberfläche und Leben. Ihr Magnetfeld schützt vor dem Sonnenwind, die Atmosphäre hält die Wärme. Die Achsneigung von 23,4° sorgt für die Jahreszeiten.', 'Mehr zum Inneren der Erde zeigt TERRA, Atlas 03 der Familie.'],
   moon: ['Unser Begleiter.', 'Der Mond entstand vermutlich, als ein marsgroßer Körper mit der jungen Erde zusammenstieß. Er zeigt uns immer dieselbe Seite, weil er sich in derselben Zeit einmal dreht, in der er die Erde umrundet.', 'Seine Anziehung erzeugt Ebbe und Flut und stabilisiert die Neigung der Erdachse.'],
   mars: ['Der rote Planet.', 'Eisenoxid – Rost – färbt den Staub des Mars rot. Er besitzt den höchsten Vulkan des Sonnensystems (Olympus Mons) und ein riesiges Grabensystem. Ausgetrocknete Flusstäler zeigen: Hier floss einst Wasser.', 'Heute gibt es Wassereis an den Polen und im Boden; die Atmosphäre ist rund 160-mal dünner als die der Erde.'],
@@ -158,12 +158,13 @@ export const processes = [
   { id: 'eclipse', name: 'Finsternisse', formula: 'Mondbahn um 5,1° geneigt', steps: ['Schräge Mondbahn', 'Knotenlinie', 'Sonnenfinsternis', 'Mondfinsternis'],
     texts: ['Die Mondbahn ist gegen die Erdbahn um gut 5° geneigt. Meist zieht der Mond deshalb über oder unter der Linie Sonne–Erde vorbei – und es gibt keine Finsternis.', 'Nur wenn Neu- oder Vollmond nahe den beiden Schnittpunkten der Bahnen (Knoten) liegt, stehen Sonne, Erde und Mond exakt in einer Reihe. Das passiert etwa zweimal im Jahr.', 'Bei Neumond im Knoten fällt der Schatten des Mondes auf die Erde. Nur im schmalen Kernschatten wird die Sonne vollständig verdeckt.', 'Bei Vollmond im Knoten wandert der Mond durch den Erdschatten. Er wird dann oft kupferrot – Sonnenlicht wird in der Erdatmosphäre gebrochen.'] },
   { id: 'seasons', name: 'Jahreszeiten', formula: 'Erdachse um 23,4° geneigt', steps: ['Frühlingsanfang', 'Sommeranfang', 'Herbstanfang', 'Winteranfang'],
-    texts: ['Die Jahreszeiten entstehen nicht durch den Abstand zur Sonne, sondern durch die geneigte Erdachse. Zum Frühlingsanfang (um den 20. März) sind Tag und Nacht überall etwa gleich lang.', 'Um den 21. Juni ist die Nordhalbkugel zur Sonne geneigt: Die Sonne steht hoch, die Tage sind lang – Sommer im Norden, Winter im Süden.', 'Um den 23. September stehen wieder beide Halbkugeln gleich zur Sonne: Herbstanfang auf der Nord-, Frühlingsanfang auf der Südhalbkugel.', 'Um den 21. Dezember zeigt die Nordhalbkugel von der Sonne weg. Übrigens: Gerade dann ist die Erde der Sonne am nächsten.'] },
+    texts: ['Die Jahreszeiten entstehen nicht durch den Abstand zur Sonne, sondern durch die geneigte Erdachse. Zum Frühlingsanfang (um den 20. März) sind Tag und Nacht überall etwa gleich lang.', 'Um den 21. Juni ist die Nordhalbkugel zur Sonne geneigt: Die Sonne steht hoch, die Tage sind lang – Sommer im Norden, Winter im Süden.', 'Um den 23. September stehen wieder beide Halbkugeln gleich zur Sonne: Herbstanfang auf der Nord-, Frühlingsanfang auf der Südhalbkugel.', 'Um den 21. Dezember zeigt die Nordhalbkugel von der Sonne weg. Übrigens: Anfang Januar erreicht die Erde ihren geringsten Sonnenabstand; das verursacht die Jahreszeiten nicht.'] },
   { id: 'starlife', name: 'Leben eines Sterns', formula: 'Masse bestimmt das Schicksal', steps: ['Gasnebel', 'Hauptreihe', 'Roter Riese', 'Weißer Zwerg'],
     texts: ['Sterne entstehen in kalten Wolken aus Gas und Staub. Die Schwerkraft zieht verdichtete Bereiche zusammen, bis es im Inneren heiß genug für Kernfusion wird.', 'Auf der Hauptreihe fusioniert ein Stern Milliarden Jahre lang Wasserstoff zu Helium – so wie unsere Sonne seit 4,6 Milliarden Jahren.', 'Ist der Wasserstoff im Kern verbraucht, bläht sich der Stern zum Roten Riesen auf. Im Inneren entstehen schwerere Elemente wie Kohlenstoff und Sauerstoff.', 'Sonnenähnliche Sterne stoßen ihre Hülle ab und hinterlassen einen Weißen Zwerg. Sehr massereiche Sterne explodieren dagegen als Supernova – dabei entstehen viele Elemente, aus denen auch wir bestehen.'] },
 ];
 
 export const CITIES = [
   ['Berlin', 52.52, 13.405], ['Hamburg', 53.551, 9.994], ['München', 48.137, 11.575], ['Köln', 50.938, 6.96], ['Frankfurt am Main', 50.11, 8.682],
-  ['Stuttgart', 48.776, 9.183], ['Leipzig', 51.34, 12.375], ['Wien', 48.208, 16.373], ['Zürich', 47.377, 8.541], ['Istanbul', 41.008, 28.978],
+  ['Stuttgart', 48.776, 9.183], ['Leipzig', 51.34, 12.375], ['Wien', 48.208, 16.373], ['Zürich', 47.377, 8.541], ['Istanbul', 41.008, 28.978], ['Dortmund', 51.514, 7.466],
 ];
+
