@@ -61,6 +61,11 @@ for (const aspect of [2.14, 1.2, .6]) for (const id of ['phases', 'eclipse']) {
     }
   }
 }
+for (const aspect of [2.14, 1.2, .6]) {
+  const scene = studio(aspect); scene.body(bodies.find(b => b.id === 'saturn'), {rotation: 10.7, obliquity: 26.7}); scene.root.updateMatrixWorld(true);
+  const ring = scene.root.children[0].children.find(o => o.geometry?.type === 'RingGeometry'), vertices = ring.geometry.attributes.position;
+  for (let i = 0; i < vertices.count; i++) { const v = new THREE.Vector3().fromBufferAttribute(vertices, i).applyMatrix4(ring.matrixWorld).project(scene.camera); assert.ok(Math.abs(v.x) < .94 && Math.abs(v.y) < .94, `Saturn rings clipped at aspect ${aspect}`); }
+}
 const stars = JSON.parse(readFileSync(new URL('../dist/data/stars.json', import.meta.url))), cons = JSON.parse(readFileSync(new URL('../dist/data/constellations.json', import.meta.url)));
 s.sky(stars, cons, 2461300.5, 51.514, 7.466); s.lookAt(40, 90); s.camera.fov = 35;
 s.sky(stars, cons, 2461300.6, 51.514, 7.466);

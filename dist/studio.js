@@ -15,7 +15,7 @@ export class Studio {
     this.controls.enableDamping = true; this.controls.autoRotateSpeed = .6; this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches; this.controls.enableDamping = !this.reducedMotion;
     this.ambient = new THREE.AmbientLight(0xbfcaff, .35); this.scene.add(this.ambient);
     this.sunLight = new THREE.PointLight(0xfff3dd, 3.2, 0, 0); this.scene.add(this.sunLight);
-    this.key = new THREE.DirectionalLight(0xfff6e8, 3); this.key.position.set(-8, 3, 6); this.scene.add(this.key);
+    this.key = new THREE.DirectionalLight(0xfff6e8, 3); this.key.position.set(-8, 6, 6); this.scene.add(this.key);
     this.root = new THREE.Group(); this.scene.add(this.root); this.tick = () => {}; this.time = 0; this.active = true; this.bounds = 8; this.pickables = [];
     this.observer = new ResizeObserver(() => this.resize()); this.observer.observe(host);
     const ray = new THREE.Raycaster(); let down = null;
@@ -141,7 +141,14 @@ export class Studio {
     const hours = Math.abs(facts?.rotation ?? meta.rotation ?? 24), dir = tilt > Math.PI / 2 ? 1 : (facts?.rotation ?? 1) < 0 ? -1 : 1;
     spin.name = 'body-spin';
     this.tick = (t, dt) => { if (!this.spinning) return; spin.rotation.y += dir * dt * Math.min(.9, 6 / Math.sqrt(hours)); if (this.clouds) this.clouds.rotation.y += dt * .01; };
-    this.spinning = !cutaway && !this.reducedMotion; this.view(meta.ring ? 8.5 : 6.4, cutaway ? [-1, .35, .25] : meta.ring ? [.25, .5, 1] : [.15, .2, 1]);
+    this.spinning = !cutaway && !this.reducedMotion;
+    if (meta.ring) {
+      const ring = pivot.children.find(o => o.geometry?.type === 'RingGeometry'); ring.updateWorldMatrix(true, false);
+      const vertices = ring.geometry.attributes.position, points = [];
+      for (let i = 0; i < vertices.count; i++) points.push(new THREE.Vector3().fromBufferAttribute(vertices, i).applyMatrix4(ring.matrixWorld));
+      for (const point of [[0, -2.9, 0], [0, 2.9, 0]]) points.push(new THREE.Vector3(...point).applyMatrix4(pivot.matrixWorld));
+      this.fit(points, cutaway ? [-1, .35, .25] : [.25, .5, 1]);
+    } else this.view(6.4, cutaway ? [-1, .35, .25] : [.15, .2, 1]);
   }
 
   /* ---------- Himmel ---------- */
