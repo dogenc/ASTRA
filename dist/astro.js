@@ -90,7 +90,7 @@ export const siderealDeg = (jd, lonDeg) => norm360(280.46061837 + 360.9856473662
 /** Höhe und Azimut (Grad; Azimut ab Nord über Ost). */
 export function altAz(raDeg, decDeg, jd, lat, lon) {
   const H = (siderealDeg(jd, lon) - raDeg) * D2R, d = decDeg * D2R, p = lat * D2R;
-  const alt = Math.asin(Math.sin(p) * Math.sin(d) + Math.cos(p) * Math.cos(d) * Math.cos(H));
+  const alt = Math.asin(Math.max(-1, Math.min(1, Math.sin(p) * Math.sin(d) + Math.cos(p) * Math.cos(d) * Math.cos(H))));
   const az = Math.atan2(-Math.cos(d) * Math.sin(H), Math.sin(d) * Math.cos(p) - Math.cos(d) * Math.sin(p) * Math.cos(H));
   return [alt * R2D, norm360(az * R2D)];
 }
@@ -138,7 +138,7 @@ export const layers = {
 };
 
 export const texts = {
-  system: ['Ein Stern. Acht Welten.', 'Alle Planeten kreisen in fast derselben Ebene um die Sonne – ein Überbleibsel der rotierenden Scheibe, aus der vor 4,6 Milliarden Jahren alles entstand. Die inneren vier sind klein und felsig, die äußeren vier riesig und gasförmig.', 'Die Positionen werden für das gewählte Datum aus den Bahnelementen des JPL berechnet. In der kompakten Ansicht sind Abstände gestaucht und Planeten stark vergrößert – sonst wären sie unsichtbar klein.'],
+  system: ['Ein Stern. Acht Welten.', 'Alle Planeten kreisen in fast derselben Ebene um die Sonne – ein Überbleibsel der rotierenden Scheibe, aus der vor 4,6 Milliarden Jahren alles entstand. Die inneren vier sind klein und felsig, die äußeren vier sind Gas- oder Eisriesen mit dichten Atmosphären.', 'Die Positionen werden für das gewählte Datum aus den Bahnelementen des JPL berechnet. In der kompakten Ansicht sind Abstände gestaucht und Planeten stark vergrößert – sonst wären sie unsichtbar klein.'],
   sun: ['Unser Stern.', 'Die Sonne vereint 99,8 % der Masse des Sonnensystems. In ihrem Kern verschmilzt Wasserstoff zu Helium – bei rund 15 Millionen Grad. Die Energie braucht zehntausende Jahre bis zur Oberfläche und dann nur gut 8 Minuten bis zur Erde.', 'Die Sonne ist ein ganz gewöhnlicher Stern der Hauptreihe. Schau nie ohne geeigneten Schutz direkt hinein.'],
   mercury: ['Klein, schnell, extrem.', 'Merkur rast in nur 88 Tagen um die Sonne. Ohne nennenswerte Atmosphäre schwankt die Temperatur zwischen über 400 °C am Tag und unter −170 °C in der Nacht. Sein Eisenkern füllt einen ungewöhnlich großen Teil des Planeten.', 'Ein Merkurtag (Sonnenaufgang bis Sonnenaufgang) dauert etwa zwei Merkurjahre.'],
   venus: ['Die Treibhaus-Hölle.', 'Venus ist fast so groß wie die Erde, aber unter dichten Schwefelsäurewolken herrschen 464 °C und der 92-fache Luftdruck. Der Treibhauseffekt ihrer Kohlendioxid-Atmosphäre macht sie heißer als Merkur.', 'Venus dreht sich rückwärts – und so langsam, dass eine Drehung um die eigene Achse (243 Erdtage) länger dauert als ihr Jahr (225 Erdtage). Ein Sonnentag dauert dagegen etwa 117 Erdtage.'],

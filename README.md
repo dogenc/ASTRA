@@ -39,7 +39,7 @@ ASTRA ist der fünfte Atlas von **DGKN@Labs**, nach [CORPUS](https://github.com/
 
 | Bereich | Entdecken |
 |---|---|
-| **Sonnensystem** | Alle acht Planeten auf angenäherten Bahnen für jedes Datum von 1800 bis 2050 – mit Zeitregler, kompakter oder maßstäblicher Ansicht und aktuellen Abständen (Erde–Mars, Lichtlaufzeit …). |
+| **Sonnensystem** | Alle acht Planeten auf angenäherten Bahnen für jedes Datum von 1800 bis 2050 – mit Zeitregler, kompakten oder maßstäblichen Abständen; Körpergrößen bleiben überhöht und aktuellen Abständen (Erde–Mars, Lichtlaufzeit …). |
 | **Himmelskörper** | Sonne, Planeten und Mond als texturierte 3D-Kugeln; Pluto als schematische Kugel mit Achsneigung, Saturnringen und Wolken. Ein Klick auf **Innerer Aufbau** schneidet sie auf: Kern, Mantel, Kruste oder metallischer Wasserstoff. Steckbriefe mit NASA-Daten. |
 | **Sternenhimmel** | Der Himmel über deinem Ort zu jeder Uhrzeit: 5.080 Sterne bis 6,0 mag, alle 88 Sternbilder mit deutschen Namen, Sonne, Mond und Planeten an ihrer berechneten Position. Mondphase, Dämmerung und Planeten über dem Horizont auf einen Blick. |
 | **Phänomene** | Mondphasen, Sonnen- und Mondfinsternis, Jahreszeiten und das Leben eines Sterns – je vier Schritte mit Zeitleiste, Pause und Tempo. |

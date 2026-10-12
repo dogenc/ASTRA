@@ -9,7 +9,7 @@ const server = require('node:child_process').spawn(process.platform === 'win32' 
     const page = await browser.newPage({viewport: {width: 1800, height: 1160}, deviceScaleFactor: 1, locale: 'de-DE', timezoneId: 'Europe/Berlin', reducedMotion: 'reduce'}), errors = []; page.on('pageerror', e => errors.push(e.message));
     const open = async (hash, wait = 2500) => { await page.goto('http://127.0.0.1:8771/' + hash); await page.waitForSelector('canvas'); await page.waitForFunction(() => document.querySelector('#loading').hidden); await page.waitForTimeout(wait); await page.evaluate(() => document.activeElement?.blur()); };
     const when = async v => { await page.fill('#when', v); await page.dispatchEvent('#when', 'change'); await page.waitForTimeout(1200); };
-    const shot = name => page.screenshot({path: path.join(out, name + '.png')});
+    const shot = async name => { await page.evaluate(() => document.activeElement?.blur()); return page.screenshot({path: path.join(out, name + '.png')}); };
     await open('#body/system', 3000); await when('2026-12-15T21:00'); await shot('01-sonnensystem');
     await open('#body/earth'); await page.click('#cutaway'); await page.waitForTimeout(2000); await shot('02-erde-aufbau'); await page.click('#cutaway');
     await open('#body/saturn', 3000); await shot('03-saturn');

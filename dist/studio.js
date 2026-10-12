@@ -48,6 +48,12 @@ export class Studio {
     const aspect = this.host.clientWidth / Math.max(this.host.clientHeight, 1), d = dist / Math.min(1, aspect), v = new THREE.Vector3(...dir).normalize().multiplyScalar(d);
     this.controls.target.set(...target); this.camera.position.set(target[0] + v.x, target[1] + v.y, target[2] + v.z); this.controls.update(); this.homeView = [dist, dir, target];
   }
+  fit(points, dir, margin = .82) {
+    const aspect = this.host.clientWidth / Math.max(this.host.clientHeight, 1), direction = new THREE.Vector3(...dir).normalize();
+    const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).normalize(), up = new THREE.Vector3().crossVectors(direction, right), tan = Math.tan(20 * D2R);
+    const distance = Math.max(...points.map(v => direction.dot(v) + Math.max(Math.abs(right.dot(v)) / (tan * aspect), Math.abs(up.dot(v)) / tan) / margin));
+    this.view(distance * Math.min(1, aspect), dir);
+  }
   reset() { if (this.skyMode) { this.camera.fov = 70; this.camera.updateProjectionMatrix(); this.lookAt(this.skyHome[0], this.skyHome[1]); } else if (this.homeView) this.view(...this.homeView); }
   clear() {
     this.tick = () => {}; this.pickables = []; this.skyMode = false; this.controls.autoRotate = false;
@@ -91,9 +97,7 @@ export class Studio {
     this.place = jd2 => { for (const id of PLANETS) { const p = helio(id, jd2), r = Math.hypot(...p); this.planets[id].g.position.copy(ecl(p, dist(r) / r)); this.planets[id].mesh.rotation.y += .01; } };
     this.place(jd); this.sunLight.position.set(0, 0, 0);
     // Fit the complete orbital plane to the viewport, rather than an oversized bounding sphere.
-    const aspect = this.host.clientWidth / Math.max(this.host.clientHeight, 1), direction = new THREE.Vector3(0, .9, 1).normalize(), up = new THREE.Vector3(0, direction.z, -direction.y), tan = Math.tan(20 * D2R);
-    const distance = Math.max(...extent.map(v => direction.dot(v) + Math.max(Math.abs(v.x) / (tan * aspect), Math.abs(up.dot(v)) / tan) / .82));
-    this.view(distance * Math.min(1, aspect), [0, .9, 1]);
+    this.fit(extent, [0, .9, 1]);
   }
   glowTexture() {
     if (this.cache.glow) return this.cache.glow;
@@ -194,12 +198,12 @@ export class Studio {
     const earthMat = () => new THREE.MeshStandardMaterial({map: this.texture('earth.jpg'), roughness: 1});
     const sunGlow = (pos, s) => { const sun = this.sphere(s, new THREE.MeshBasicMaterial({map: this.texture('sun.jpg')}), 48); sun.position.copy(pos); this.root.add(sun); const g = new THREE.Sprite(new THREE.SpriteMaterial({map: this.glowTexture(), color: 0xffc46b, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); g.scale.setScalar(s * 4.5); g.position.copy(pos); this.root.add(g); return sun; };
     if (id === 'phases' || id === 'eclipse') {
-      const sunPos = new THREE.Vector3(-26, 0, 0); sunGlow(sunPos, 3); sunDir.position.copy(sunPos);
-      const earth = this.sphere(1.3, earthMat()); earth.rotation.z = -23.4 * D2R; this.root.add(earth); earth.userData.pick = {label: 'Erde'}; this.pickables.push(earth);
+      const sunPos = new THREE.Vector3(-12, 0, 0); sunGlow(sunPos, 1.4).name = 'process-sun'; sunDir.position.copy(sunPos);
+      const earth = this.sphere(1.3, earthMat()); earth.rotation.z = -23.4 * D2R; this.root.add(earth); earth.name = 'process-earth'; earth.userData.pick = {label: 'Erde'}; this.pickables.push(earth);
       const node = new THREE.Group(), tilt = new THREE.Group(); this.root.add(node); node.add(tilt);
       const incl = id === 'eclipse' ? 5.1 * D2R * 3 : 0; tilt.rotation.z = incl; // Neigung zur Verdeutlichung 3-fach überhöht
       this.line(tilt, Array.from({length: 129}, (_, k) => new THREE.Vector3(Math.cos(k / 128 * Math.PI * 2) * 6, 0, Math.sin(k / 128 * Math.PI * 2) * 6)), '#aab6ff', .45);
-      const moonMat = new THREE.MeshStandardMaterial({map: this.texture('moon.jpg'), roughness: 1}), moon = this.sphere(.38, moonMat); tilt.add(moon); moon.userData.pick = {label: 'Mond'}; this.pickables.push(moon);
+      const moonMat = new THREE.MeshStandardMaterial({map: this.texture('moon.jpg'), roughness: 1}), moon = this.sphere(.38, moonMat); tilt.add(moon); moon.name = 'process-moon'; moon.userData.pick = {label: 'Mond'}; this.pickables.push(moon);
       const inset = this.phaseInset(); this.root.add(inset);
       let earthShadow = null, moonShadow = null;
       if (id === 'eclipse') {
@@ -211,7 +215,10 @@ export class Studio {
         for (const z of [6, -6]) { const m = this.sphere(.13, new THREE.MeshBasicMaterial({color: '#ffd98a'}), 16); m.position.set(0, 0, z); tilt.add(m); this.label(tilt, 'Knoten', new THREE.Vector3(0, .25, z), {size: 1.4}); }
       }
       this.label(this.root, 'Licht der Sonne →', new THREE.Vector3(-9.5, .4, 0), {color: '#ffd98a', size: 1.05});
-      this.view(26, [.05, .75, .8]);
+      const frame = [new THREE.Vector3(-15.2, 3.2, 0), new THREE.Vector3(-15.2, -3.2, 0), new THREE.Vector3(0, 5.8, 0)];
+      for (let k = 0; k < 129; k++) { const a = k / 128 * Math.PI * 2; for (const y of [-1.9, 1.9]) frame.push(new THREE.Vector3(Math.cos(a) * 6.5, y, Math.sin(a) * 6.5)); }
+      if (id === 'eclipse') frame.push(new THREE.Vector3(14, 0, 0));
+      this.fit(frame, [.05, .75, .8]);
       const ease = f => Math.min(1, f * 2.4);
       return p => {
         let ang, beta = 0, reddish = 0;
@@ -239,7 +246,7 @@ export class Studio {
       const earth = this.sphere(1.1, earthMat()); tiltG.add(earth); this.line(tiltG, [new THREE.Vector3(0, -1.8, 0), new THREE.Vector3(0, 1.8, 0)], '#ffd98a', .9);
       const eq = this.line(tiltG, Array.from({length: 65}, (_, k) => new THREE.Vector3(Math.cos(k / 64 * Math.PI * 2) * 1.13, 0, Math.sin(k / 64 * Math.PI * 2) * 1.13)), '#ffffff', .5);
       ['Frühling', 'Sommer', 'Herbst', 'Winter'].forEach((t, k) => { const a = Math.PI * .5 + k * Math.PI / 2; this.label(this.root, t + ' (Nord)', new THREE.Vector3(Math.cos(a) * 12, .4, -Math.sin(a) * 12), {size: 2}); });
-      this.view(40, [0, .8, .7]);
+      this.fit(Array.from({length: 65}, (_, k) => { const a = k / 64 * Math.PI * 2; return new THREE.Vector3(Math.cos(a) * 13, 1.5, Math.sin(a) * 13); }), [0, .8, .7]);
       return p => { const a = Math.PI * .5 + p * Math.PI * 2; pivot.position.set(Math.cos(a) * 9, 0, -Math.sin(a) * 9); earth.rotation.y = p * Math.PI * 16; };
     }
     // Leben eines Sterns
@@ -256,8 +263,8 @@ export class Studio {
     const tint = (c1, c2, f) => new THREE.Color(c1).lerp(new THREE.Color(c2), f);
     return p => {
       const k = Math.min(3, Math.floor(p * 4)), f = p * 4 - k; group.rotation.y = p * Math.PI / 4;
-      if (k === 0) { nebula.visible = true; nebula.scale.setScalar(1.6 - f * 1.3); nebula.material.opacity = .9; star.scale.setScalar(.05 + f * .7); starMat.color.copy(tint('#ff8f5a', '#fff2c8', f)); glow.scale.setScalar(1 + f * 3); shellPts.visible = false; }
-      if (k === 1) { nebula.visible = f < .3; nebula.scale.setScalar(.3); star.scale.setScalar(.75 + Math.sin(f * 6) * .02); starMat.color.set('#fff2c8'); glow.material.color.set('#ffc46b'); glow.scale.setScalar(4); shellPts.visible = false; }
+      if (k === 0) { nebula.visible = true; glow.material.color.copy(tint('#ff8f5a', '#ffc46b', f)); nebula.scale.setScalar(1.6 - f * 1.3); nebula.material.opacity = .9; star.scale.setScalar(.05 + f * .7); starMat.color.copy(tint('#ff8f5a', '#fff2c8', f)); glow.scale.setScalar(1 + f * 3); shellPts.visible = false; }
+      if (k === 1) { nebula.visible = f < .3; nebula.material.opacity = .9; nebula.scale.setScalar(.3); star.scale.setScalar(.75 + Math.sin(f * 6) * .02); starMat.color.set('#fff2c8'); glow.material.color.set('#ffc46b'); glow.scale.setScalar(4); shellPts.visible = false; }
       if (k === 2) { nebula.visible = false; star.scale.setScalar(.75 + f * 3.2); starMat.color.copy(tint('#fff2c8', '#ff6a3d', f)); glow.material.color.copy(tint('#ffc46b', '#ff5a30', f)); glow.scale.setScalar(4 + f * 9); shellPts.visible = false; }
       if (k === 3) { star.scale.setScalar(Math.max(.18, 3.95 * (1 - f * 1.4))); starMat.color.copy(tint('#ff6a3d', '#dfe8ff', f)); glow.material.color.copy(tint('#ff5a30', '#9fc4ff', f)); glow.scale.setScalar(Math.max(1.2, 13 * (1 - f))); shellPts.visible = true; shellPts.scale.setScalar(3 + f * 5); shellPts.material.opacity = .8 * (1 - f * .4); }
     };

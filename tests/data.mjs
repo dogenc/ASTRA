@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {helio, geocentric, altAz, moonPhase, processes, bodies, layers, texts} from '../dist/astro.js';
+import {helio, geocentric, altAz, moonPhase, siderealDeg, processes, bodies, layers, texts} from '../dist/astro.js';
 const json = p => JSON.parse(readFileSync(new URL(p, import.meta.url)));
 const facts = json('../dist/data/facts.json'), stars = json('../dist/data/stars.json'), cons = json('../dist/data/constellations.json');
 // Daten
@@ -27,4 +27,6 @@ for (const [d, row] of Object.entries(fx.moon)) {
 // Plausibilität: Polaris steht etwa so hoch wie die geografische Breite; Phase im gültigen Bereich
 const [alt] = altAz(37.95, 89.26, 2461300.5, 52.52, 13.405); assert.ok(Math.abs(alt - 52.52) < 1, 'Polaris');
 for (let jd = 2461300; jd < 2461330; jd += 3) { const p = moonPhase(jd); assert.ok(p.fraction >= 0 && p.fraction <= 1 && p.name); }
+for (let latitude = -90; latitude <= 90; latitude += .5) { const aa = altAz(siderealDeg(2461300.5, 0), latitude, 2461300.5, latitude, 0); assert.ok(aa.every(Number.isFinite) && Math.abs(aa[0] - 90) < .00001, 'Zenith finite'); }
 console.log(`PASS: 10 Körper, ${stars.length} Sterne, 88 Sternbilder, 4 Phänomene; Planeten vs. JPL Horizons max. ${worst.toFixed(3)}°, Mond < 0,15°`);
+

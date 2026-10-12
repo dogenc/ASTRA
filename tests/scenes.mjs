@@ -49,6 +49,18 @@ for (const aspect of [1.5, .6]) for (const real of [false, true]) {
     assert.ok(Math.abs(v.x) < .94 && Math.abs(v.y) < .94 && v.z < 1, `${id} outside initial ${real ? 'real' : 'compact'} viewport at aspect ${aspect}`);
   }
 }
+for (const aspect of [2.14, 1.2, .6]) for (const id of ['phases', 'eclipse']) {
+  const scene = studio(aspect), draw = scene.process(id);
+  for (const p of [0, .25, .5, .75, .875, 1]) {
+    draw(p); scene.root.updateMatrixWorld(true);
+    for (const name of ['process-sun', 'process-earth', 'process-moon']) {
+      const mesh = scene.root.getObjectByName(name), box = new THREE.Box3().setFromObject(mesh);
+      for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+        const v = new THREE.Vector3(x, y, z).project(scene.camera); assert.ok(Math.abs(v.x) < .98 && Math.abs(v.y) < .98, `${id} ${name} clipped at ${p}, aspect ${aspect}`);
+      }
+    }
+  }
+}
 const stars = JSON.parse(readFileSync(new URL('../dist/data/stars.json', import.meta.url))), cons = JSON.parse(readFileSync(new URL('../dist/data/constellations.json', import.meta.url)));
 s.sky(stars, cons, 2461300.5, 51.514, 7.466); s.lookAt(40, 90); s.camera.fov = 35;
 s.sky(stars, cons, 2461300.6, 51.514, 7.466);
