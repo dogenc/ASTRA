@@ -44,7 +44,7 @@ jobs:
       - name: Echte Dokumentationsaufnahmen erstellen
         run: node scripts/gallery.cjs
       - name: Geprüfte Screenshots als Git-Dateien bereitstellen
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: node scripts/stage_gallery.cjs
         env:
           GH_TOKEN: ${{ github.token }}
