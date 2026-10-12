@@ -22,7 +22,7 @@ const {_electron} = require('playwright'), assert = require('node:assert/strict'
     // Screenshot capture is diagnostic; the mandatory native checks already verified a real rendered PNG download.
     const capture = await app.evaluate(async ({BrowserWindow}, dest) => {
       const win = BrowserWindow.getAllWindows()[0];
-      const image = await Promise.race([win.webContents.capturePage(), new Promise(resolve => setTimeout(() => resolve(null), 15000))]);
+      const image = await Promise.race([win.webContents.capturePage().catch(() => null), new Promise(resolve => setTimeout(() => resolve(null), 15000))]);
       if (!image || image.isEmpty()) return false;
       require('node:fs').writeFileSync(dest, image.toPNG()); return true;
     }, path.join(result, 'desktop.png'));
