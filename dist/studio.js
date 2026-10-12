@@ -72,7 +72,7 @@ export class Studio {
     this.root.traverse(o => { o.geometry?.dispose(); if (o.material) for (const m of (Array.isArray(o.material) ? o.material : [o.material])) { if (m.map && !Object.values(this.cache).includes(m.map)) m.map.dispose(); m.dispose(); } });
     this.root.clear(); this.managedLabels = []; this.skyPointMaterial = null; this.backgroundSphere = null; this.root.rotation.set(0, 0, 0); this.scene.background = null; this.sunLight.intensity = 3.2; this.key.intensity = 0; this.ambient.intensity = .35;
     // Large maps belong to the current scene; browsing all bodies must not retain gigabytes of GPU textures.
-    for (const key of Object.keys(this.cache)) if (key.startsWith('hq/') || key.startsWith('4k/')) { this.cache[key].dispose(); delete this.cache[key]; }
+    for (const key of Object.keys(this.cache)) if (key !== 'glow') { this.cache[key].dispose(); delete this.cache[key]; }
   }
   label(parent, text, pos, {color = '#e9ecff', size = 1, bg = '#0e1430cc', screen = false, priority = 50} = {}) {
     const c = document.createElement('canvas'), ctx = c.getContext('2d'); ctx.font = '600 40px Inter,sans-serif'; const w = Math.ceil(ctx.measureText(text).width) + 44;

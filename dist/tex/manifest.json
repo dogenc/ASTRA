@@ -191,7 +191,7 @@
       "source_sha256": "f1f826933c9ff87d64ecf0518d6256b8ed990b003722794f67e96e3d2b876ae4",
       "license": "CC-BY-4.0",
       "creator": "INOVE / Solar System Scope",
-      "transformation": "JPEG quality 95 / 4K downsample where applicable"
+      "transformation": "PNG 4K derivative"
     },
     {
       "path": "dist/tex/hq/sun.jpg",
